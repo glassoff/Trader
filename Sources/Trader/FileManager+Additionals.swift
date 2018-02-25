@@ -10,7 +10,7 @@ import Foundation
 
 extension FileManager {
 
-    func createIfNeedsAndReturnFileURLForTradeData(fileName: String, dataPath: String) -> URL {//XXX remove dataPath
+    func createIfNeedsAndReturnFileURLForTradeData(fileName: String) -> URL {
         let dir = URL(fileURLWithPath: application.dataPath)
 
         let tradeDirURL = dir.appendingPathComponent("trade_data")

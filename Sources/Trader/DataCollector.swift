@@ -17,20 +17,19 @@ struct PriceData {
 class DataCollector {
 
     private let pairs: [String]
-    private let partOfHourInterval: Int = 4 // 1/partOfHourInterval (1/4 = 15 min)
+    private let partOfHourInterval: Int = 60//4 // 1/partOfHourInterval (1/4 = 15 min)
+    private let maxNumberOfDataLines = 700
     private let notCollect: Bool
-    private let dataPath: String
 
-    private var connection: Connection<TradesResponse>?
+    private var connection: Connection<TickerResponse>?
 
-    init(pairs: [String], notCollect: Bool, dataPath: String) {
+    init(pairs: [String], notCollect: Bool) {
         self.pairs = pairs
         self.notCollect = notCollect
-        self.dataPath = dataPath
     }
 
     func data(for pair: String) -> [PriceData] {
-        let fileHandler = file(forPair: pair, type: .buy)
+        let fileHandler = file(forPair: pair)
         let data = fileHandler.readDataToEndOfFile()
         guard let dataString = String(data: data, encoding: .utf8) else {
             return []
@@ -39,11 +38,11 @@ class DataCollector {
         var result = [PriceData]()
         let items = dataString.split(separator: "\n")
         for itemString in items {
-            let columns = itemString.split(separator: ",")
+            let columns = itemString.split(separator: ";")
 
             guard columns.count > 1,
                 let date = dateFormatterGMT.date(from: String(columns[0])),
-                let value = priceFormatter.number(from: String(columns[1]))?.doubleValue else {
+                let value = Utils.doubleExcelFormatter.number(from: String(columns[1]))?.doubleValue else {
                     continue
             }
 
@@ -64,7 +63,7 @@ class DataCollector {
             if let lastItemDate = data(for: pair).last?.date {
                 if Date().timeIntervalSince(lastItemDate) > Double((60*60/partOfHourInterval)*5) {
                     print("Delete old data for \(pair)")
-                    let fileURL = createIfNeedsAndReturnFileURL(forPair: pair, type: .buy)
+                    let fileURL = createIfNeedsAndReturnFileURL(forPair: pair)
                     try! FileManager.default.removeItem(at: fileURL)
                 }
             }
@@ -109,55 +108,77 @@ class DataCollector {
     }
 
     private func executeStep() {
-        connection = Connection<TradesResponse>(request: TradesRequest(pairs: pairs))
+        connection = Connection<TickerResponse>(request: TickerRequest())
         connection?.execute { [weak self] (response) in
-            guard let tradesInfos = response?.pairTradesInfos else {
+            guard let `self` = self else {
+                return
+            }
+            guard let tickers = response?.items else {
+                print("ERROR: tickers are nil")
                 return
             }
 
-            for tradesInfo in tradesInfos {
-                self?.processData(tradesInfo: tradesInfo)
+            let filteredItems = tickers.filter { self.pairs.contains($0.pair) }
+
+            guard filteredItems.count > 0 else {
+                print("ERROR: no our pairs in tickers")
+                return
             }
 
-            self?.collect()
+            for tickerItem in filteredItems {
+                self.writeData(pair: tickerItem.pair, value: tickerItem.lastTradePrice)
+            }
+
+            self.observers.forEach { $0.observer?.dataCollector(self, didGetNewData: filteredItems) }
+
+            self.collect()
         }
     }
 
-    private func processData(tradesInfo: PairTradesInfo) {
-        let pair = tradesInfo.pair
-
-        let buyTrades = tradesInfo.trades.filter { $0.type == "buy" }.sorted { $0.date > $1.date }
-        let avgBuyPriceValue = buyTrades.reduce(0, { $0 + $1.priceValue }) / Double(buyTrades.count)
-        writeTrade(pair: pair, type: .buy, value: avgBuyPriceValue)
-
-//        let sellTrades = tradesInfo.trades.filter { $0.type == "sell" }
-    }
-
-    // ETH_BTC-BUY-4.csv
-    private func writeTrade(pair: String, type: OrderType, value: Double) {
+    // ETH_BTC-4.csv
+    private func writeData(pair: String, value: Double) {
         guard value > 0 else {
             return
         }
 
         let dateString = dateFormatterGMT.string(from: Date())
-        let tradeDataString = "\(dateString),\(value)\n"
-        let tradeData = tradeDataString.data(using: .utf8)!
+        let valueString = Utils.doubleExcelFormatter.string(from: NSNumber(value: value))!
+        let tradeDataString = "\(dateString);\(valueString)\n"
 
-        let fileHandler = file(forPair: pair, type: type)
+        let fileHandler = file(forPair: pair)
 
-        fileHandler.seekToEndOfFile()
+        let dataString: String
+
+        let existData = fileHandler.readDataToEndOfFile()
+        if let existDataString = String(data: existData, encoding: .utf8) {
+            let lines = existDataString.split(separator: "\n")
+            if lines.count > maxNumberOfDataLines {
+                let newRange = (lines.count - maxNumberOfDataLines) ... (lines.count - 1)
+                let newLines = Array(lines[newRange])
+                dataString = newLines.joined(separator: "\n") + "\n" + tradeDataString
+                fileHandler.seek(toFileOffset: 0)
+            } else {
+                dataString = tradeDataString
+                fileHandler.seekToEndOfFile()
+            }
+        } else {
+            dataString = tradeDataString
+            fileHandler.seekToEndOfFile()
+        }
+
+        let tradeData = dataString.data(using: .utf8)!
         fileHandler.write(tradeData)
         fileHandler.closeFile()
     }
 
-    private func createIfNeedsAndReturnFileURL(forPair pair: String, type: OrderType) -> URL {
-        let fileName = "\(pair)-\(type.rawValue)-\(partOfHourInterval)".uppercased() + ".csv"
+    private func createIfNeedsAndReturnFileURL(forPair pair: String) -> URL {
+        let fileName = "\(pair)-\(partOfHourInterval)".uppercased() + ".csv"
 
-        return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName, dataPath: dataPath)
+        return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName)
     }
 
-    private func file(forPair pair: String, type: OrderType) -> FileHandle {
-        return try! FileHandle(forUpdating: createIfNeedsAndReturnFileURL(forPair: pair, type: type))
+    private func file(forPair pair: String) -> FileHandle {
+        return try! FileHandle(forUpdating: createIfNeedsAndReturnFileURL(forPair: pair))
     }
 
     private let dateFormatterGMT: DateFormatter = {
@@ -168,11 +189,31 @@ class DataCollector {
         return formatter
     }()
 
-    private let priceFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.decimalSeparator = "."
-
-        return formatter
-    }()
+    private var observers = [ObserverWrapper]()
     
+}
+
+protocol DataCollectorObserver: class {
+    func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem])
+}
+
+private struct ObserverWrapper {
+    weak var observer: DataCollectorObserver?
+}
+
+extension DataCollector {
+
+    func addObserver(_ observer: DataCollectorObserver) {
+        guard observers.contains(where: { $0.observer === observer }) == false else {
+            return
+        }
+        observers.append(ObserverWrapper(observer: observer))
+    }
+
+    func removeObserver(_ observer: DataCollectorObserver) {
+        if let index = observers.index(where: { $0.observer === observer }) {
+            observers.remove(at: index)
+        }
+    }
+
 }

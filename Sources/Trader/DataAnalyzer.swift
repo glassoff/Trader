@@ -13,13 +13,11 @@ class DataAnalyzer {
     private let pairs: [String]
     private let collector: DataCollector
     private let fakeEnter: Bool
-    private let dataPath: String
 
-    init(pairs: [String], collector: DataCollector, fakeEnter: Bool, dataPath: String) {
+    init(pairs: [String], collector: DataCollector, fakeEnter: Bool) {
         self.pairs = pairs
         self.collector = collector
         self.fakeEnter = fakeEnter
-        self.dataPath = dataPath
     }
 
     func findPairsForEnter() -> [TaskInitialData] {
@@ -57,26 +55,31 @@ class DataAnalyzer {
             return nil
         }
 
-        guard let emaData = ema(for: pair), emaData.count > 0 else {
-            print("ERROR: no EMA data!")
+        guard let emaData21 = ema(for: pair, period: 21), emaData21.count > 0 else {
+            print("ERROR: no EMA 21 data!")
             return nil
         }
 
-        let lastEMAPrice = emaData.last!.price
-
-        if bestBuyPrice < lastEMAPrice && trendIsIncreasing(emaData: emaData) {
-            print("bestBuyPrice: \(bestBuyPrice) < lastEMAPrice: \(lastEMAPrice)")
-
-            let taskData = createInitialData(pair: pair, bestBuyPrice: bestBuyPrice)
-
-            log(pair: pair, successfull: true)
-
-            return taskData
-        } else {
-            log(pair: pair, successfull: false)
-
+        guard let emaData7 = ema(for: pair, period: 7), emaData7.count > 0 else {
+            print("ERROR: no EMA 7 data!")
             return nil
         }
+
+//        let lastEMAPrice = emaData.last!.price//XXX
+//
+//        if bestBuyPrice < lastEMAPrice && trendIsIncreasing(emaData: emaData) {
+//            print("bestBuyPrice: \(bestBuyPrice) < lastEMAPrice: \(lastEMAPrice)")
+//
+//            let taskData = createInitialData(pair: pair, bestBuyPrice: bestBuyPrice)
+//
+//            log(pair: pair, successfull: true)
+//
+//            return taskData
+//        } else {
+//            log(pair: pair, successfull: false)
+//
+            return nil
+//        }
     }
 
     private func trendIsIncreasing(emaData: [PriceData]) -> Bool {
@@ -144,39 +147,38 @@ class DataAnalyzer {
         return bestPrice
     }
 
-    private func ema(for pair: String) -> [PriceData]? {
+    private func ema(for pair: String, period: Int) -> [PriceData]? {
         let priceData = collector.data(for: pair)
 
-        let emaPeriod = 30
-        let minimumDataCount = emaPeriod * 2
+        let minimumDataCount = period * 2
         guard priceData.count >= minimumDataCount else {
             print("Not enough data count, only \(priceData.count), we need \(minimumDataCount)")
             return nil
         }
 
-        return calculateEMA(data: priceData, step: emaPeriod)
+        return calculateEMA(data: priceData, step: period)
     }
 
-    private func log(pair: String, successfull: Bool) {
-        let priceData = collector.data(for: pair)
-        let emaData = ema(for: pair)!
-
-        let priceDataSlice = Array(priceData[priceData.count - emaData.count ..< priceData.count])
-
-        let filePrefix = successfull ? "SUCCESS" : "NOT"
-        let fileName = "\(filePrefix)-\(pair)-\(dateFormatter.string(from: Date())).csv"
-        let fileURL = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName, dataPath: dataPath)
-        let fileHandler = try! FileHandle(forWritingTo: fileURL)
-
-        for i in 0 ..< emaData.count {
-            let dateString = dateFormatter.string(from: priceDataSlice[i].date)
-            let string = "\(dateString),\(priceDataSlice[i].price),\(emaData[i].price)\n"
-
-            fileHandler.seekToEndOfFile()
-            fileHandler.write(string.data(using: .utf8)!)
-        }
-
-        fileHandler.closeFile()
+    private func log(pair: String, successfull: Bool) {//XXX
+//        let priceData = collector.data(for: pair)
+//        let emaData = ema(for: pair)!
+//
+//        let priceDataSlice = Array(priceData[priceData.count - emaData.count ..< priceData.count])
+//
+//        let filePrefix = successfull ? "SUCCESS" : "NOT"
+//        let fileName = "\(filePrefix)-\(pair)-\(dateFormatter.string(from: Date())).csv"
+//        let fileURL = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName, dataPath: dataPath)
+//        let fileHandler = try! FileHandle(forWritingTo: fileURL)
+//
+//        for i in 0 ..< emaData.count {
+//            let dateString = dateFormatter.string(from: priceDataSlice[i].date)
+//            let string = "\(dateString),\(priceDataSlice[i].price),\(emaData[i].price)\n"
+//
+//            fileHandler.seekToEndOfFile()
+//            fileHandler.write(string.data(using: .utf8)!)
+//        }
+//
+//        fileHandler.closeFile()
     }
 
     private let dateFormatter: DateFormatter = {

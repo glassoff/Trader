@@ -21,7 +21,7 @@ class Application {
 
         print("Data path: \(dataPath)")
 
-        collector = DataCollector(pairs: Settings.pairs, notCollect: withoutCollect, dataPath: dataPath)
+        collector = DataCollector(pairs: Settings.pairs, notCollect: withoutCollect)
         collector.startCollect()
 
         if fakeEnter {
@@ -31,11 +31,11 @@ class Application {
         if onlyCollect {
             print("Only Collect mode")
         } else {
-            monitor = OrdersMonitor(dataPath: dataPath)
+            monitor = OrdersMonitor()
             monitor.start()
 
-            enterWorker = EnterWorker(collector: collector, monitor: monitor, fakeEnter: fakeEnter, dataPath: dataPath)
-            enterWorker.start()
+            enterWorker = EnterWorker(collector: collector, monitor: monitor, fakeEnter: fakeEnter)
+            collector.addObserver(enterWorker)
         }
     }
 

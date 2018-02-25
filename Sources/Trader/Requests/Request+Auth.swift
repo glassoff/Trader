@@ -39,7 +39,7 @@ extension URLRequest {
 
 class NonceStorage {
 
-    private let storageFile = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "nonce-value", dataPath: "")
+    private let storageFile = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "nonce-value")
 
     static let shared = NonceStorage()
 

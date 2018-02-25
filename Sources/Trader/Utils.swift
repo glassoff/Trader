@@ -45,6 +45,29 @@ class Utils {
         }
     }
 
+    class func ourRound(_ value: Double) -> Double {
+        let base = pow(10, Double(Settings.afterPointDigits))
+        return round(base * value) / base
+    }
+
+    static var doubleFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.decimalSeparator = "."
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = Settings.afterPointDigits
+
+        return formatter
+    }()
+
+    static var doubleExcelFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.decimalSeparator = ","
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = Settings.afterPointDigits
+
+        return formatter
+    }()
+
 }
 
 extension Array {

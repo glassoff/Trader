@@ -48,10 +48,8 @@ private struct TaskData: Codable {
 class OrdersMonitor {
 
     private var objects = [TaskData]()
-    private let dataPath: String
 
-    init(dataPath: String) {
-        self.dataPath = dataPath
+    init() {
         loadObjects()
     }
 
@@ -175,7 +173,7 @@ class OrdersMonitor {
     }
 
     private func objectsFileURL() -> URL {
-        return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "order-monitor-data.json", dataPath: dataPath)
+        return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "order-monitor-data.json")
     }
 
 }
