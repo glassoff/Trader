@@ -17,7 +17,7 @@ struct PriceData {
 class DataCollector {
 
     private let pairs: [String]
-    private let partOfHourInterval: Int = 60//4 // 1/partOfHourInterval (1/4 = 15 min)
+    private let partOfHourInterval: Int = 4 // 1/partOfHourInterval (1/4 = 15 min)
     private let maxNumberOfDataLines = 700
     private let notCollect: Bool
 
@@ -156,7 +156,7 @@ class DataCollector {
                 let newRange = (lines.count - maxNumberOfDataLines) ... (lines.count - 1)
                 let newLines = Array(lines[newRange])
                 dataString = newLines.joined(separator: "\n") + "\n" + tradeDataString
-                fileHandler.seek(toFileOffset: 0)
+                fileHandler.truncateFile(atOffset: 0)
             } else {
                 dataString = tradeDataString
                 fileHandler.seekToEndOfFile()
