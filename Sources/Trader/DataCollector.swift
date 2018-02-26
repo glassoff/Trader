@@ -115,6 +115,7 @@ class DataCollector {
             }
             guard let tickers = response?.items else {
                 print("ERROR: tickers are nil")
+                self.collect()
                 return
             }
 
@@ -122,6 +123,7 @@ class DataCollector {
 
             guard filteredItems.count > 0 else {
                 print("ERROR: no our pairs in tickers")
+                self.collect()
                 return
             }
 
