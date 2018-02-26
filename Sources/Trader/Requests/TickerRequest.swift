@@ -74,14 +74,20 @@ private struct ResponseDecoder: Decodable {
 
 private struct TickerItemDecoder: Decodable {
     let last_trade: String
+    let buy_price: String
+    let sell_price: String
 }
 
 struct TickerItem {
     let pair: String
     let lastTradePrice: Double
+    let currentBestBuyPrice: Double
+    let currentBestSellPrice: Double
 
     fileprivate init(pair: String, decodedObject: TickerItemDecoder) {
         self.pair = pair
         self.lastTradePrice = Utils.doubleFormatter.number(from: decodedObject.last_trade)!.doubleValue
+        self.currentBestBuyPrice = Utils.doubleFormatter.number(from: decodedObject.buy_price)!.doubleValue
+        self.currentBestSellPrice = Utils.doubleFormatter.number(from: decodedObject.sell_price)!.doubleValue
     }
 }

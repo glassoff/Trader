@@ -12,8 +12,6 @@ private struct TaskData: Codable {
     let pair: String
     let orderId: Int
     let quantity: Double
-    let sellPrice: Double?
-    let sellQuantity: Double?
     let typeString: String
     let createdAt: Date
 
@@ -25,8 +23,6 @@ private struct TaskData: Codable {
         case pair
         case orderId
         case quantity
-        case sellPrice
-        case sellQuantity
         case typeString
         case createdAt
     }
@@ -38,8 +34,6 @@ private struct TaskData: Codable {
         self.pair = order.pair
         self.orderId = order.orderId
         self.quantity = order.quantity
-        self.sellPrice = initialData?.sellPrice
-        self.sellQuantity = initialData?.sellQuantity
         self.typeString = order.type.rawValue
         self.createdAt = Date()
     }
@@ -82,7 +76,7 @@ class OrdersMonitor {
 
         for (index, object) in objects.enumerated() {
             if let serverOrder = (openOrders.filter { $0.orderId == object.orderId }).first {
-                if objectYetExist(object: object, withServerOrder: serverOrder) {
+                if cancelOrderIfNeeded(object: object, withServerOrder: serverOrder) {
                     objectsIdsForRemoving.append(index)
                 }
             } else {
@@ -101,9 +95,8 @@ class OrdersMonitor {
         }
     }
 
-    // true if need delete
-    private func objectYetExist(object: TaskData, withServerOrder serverOrder: Order) -> Bool {
-        print("Yet exist order \(object.orderId) for \(object.pair)")
+    private func cancelOrderIfNeeded(object: TaskData, withServerOrder serverOrder: Order) -> Bool {
+        print("Yet exist \(object.type.rawValue) order \(object.orderId) for \(object.pair)")
 
         guard orderIsFullOpen(object: object, withServerOrder: serverOrder) == true else {
             print("Order partially closed, we can't do anything.")
@@ -118,7 +111,6 @@ class OrdersMonitor {
         return false
     }
 
-    // true if need delete
     private func objectWasClosed(object: TaskData) -> Bool {
         print("Closed order \(object.orderId) for \(object.pair)")
 
@@ -127,7 +119,7 @@ class OrdersMonitor {
             return true
         } else {
             print("Buy order was closed!")
-            return placeSellOrder(object: object)
+            return true
         }
     }
 
@@ -140,18 +132,6 @@ class OrdersMonitor {
         }
 
         return true
-    }
-
-    private func placeSellOrder(object: TaskData) -> Bool {
-        print("Place sell order...")
-        assert(object.type == .buy)
-        if let order = Utils.placeOrder(pair: object.pair, type: .sell, orderPrice: object.sellPrice!, quantity: object.sellQuantity!) {
-            addSellOrder(order)
-            return true
-        } else {
-            print("ERROR: can't create sell order!")
-            return false
-        }
     }
 
     private func saveObjects() {

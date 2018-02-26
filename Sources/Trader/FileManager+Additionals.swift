@@ -10,15 +10,18 @@ import Foundation
 
 extension FileManager {
 
-    func createIfNeedsAndReturnFileURLForTradeData(fileName: String) -> URL {
-        let dir = URL(fileURLWithPath: application.dataPath)
+    func createIfNeedsAndReturnFileURLForTradeData(fileName: String, folder: String? = nil) -> URL {
+        let mainDir = URL(fileURLWithPath: application.dataPath)
 
-        let tradeDirURL = dir.appendingPathComponent("trade_data")
-        let fileURL = dir.appendingPathComponent("trade_data/" + fileName)
+        var tradeDirURL = mainDir.appendingPathComponent("trade_data")
+        if let folder = folder {
+            tradeDirURL = tradeDirURL.appendingPathComponent(folder)
+        }
+        let fileURL = tradeDirURL.appendingPathComponent(fileName)
 
         var isDirectory = ObjCBool(true)
         if !fileExists(atPath: tradeDirURL.path, isDirectory: &isDirectory) {
-            try! createDirectory(at: tradeDirURL, withIntermediateDirectories: false, attributes: nil)
+            try! createDirectory(at: tradeDirURL, withIntermediateDirectories: true, attributes: nil)
         }
         if !fileExists(atPath: fileURL.path) {
             _ = createFile(atPath: fileURL.path, contents: nil, attributes: nil)

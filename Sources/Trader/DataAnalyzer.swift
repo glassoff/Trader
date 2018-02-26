@@ -20,23 +20,18 @@ class DataAnalyzer {
         self.fakeEnter = fakeEnter
     }
 
-    func findPairsForEnter() -> [TaskInitialData] {
-        guard let pairOrderBooks = Connection<OrderBookResponse>(request: OrderBookRequest(pairs: pairs)).syncExecute()?.pairOrderBooks else {
-            print("ERROR: no order book!")
-            return []
-        }
-
+    func findPairsForEnter(tickData: [TickerItem]) -> [TaskInitialData] {
         guard fakeEnter == false else {
             print("Create fake enter data...")
-            let orderBook = (pairOrderBooks.filter { $0.pair == "ETH_BTC" }).first!
-            let price = bestCurrentPrice(from: orderBook.book, type: .buy)!
-            return [createInitialData(pair: orderBook.pair, bestBuyPrice: price/4)]
+            let tick = (tickData.filter { $0.pair == "ETH_BTC" }).first!
+            let price = tick.currentBestBuyPrice
+            return [createInitialBuyData(pair: tick.pair, bestBuyPrice: price/4)!]
         }
 
         var taskDatas = [TaskInitialData]()
 
-        for pairOrderBook in pairOrderBooks {
-            if let taskData = canEnterToPair(orderBook: pairOrderBook) {
+        for pairTickData in tickData {
+            if let taskData = canEnterToPair(tickData: pairTickData) {
                 print("Can enter with \(taskData)")
                 taskDatas.append(taskData)
             }
@@ -45,77 +40,69 @@ class DataAnalyzer {
         return taskDatas
     }
 
-    private func canEnterToPair(orderBook pairOrderBook: PairOrderBook) -> TaskInitialData? {
-        let pair = pairOrderBook.pair
+    private func canEnterToPair(tickData: TickerItem) -> TaskInitialData? {
+        let pair = tickData.pair
 
         print("Check of entering to \(pair)...")
 
-        guard let bestBuyPrice = bestCurrentPrice(from: pairOrderBook.book, type: .buy) else {
-            print("ERROR: no best price!")
+        guard let smaData21 = sma(for: pair, period: 21), smaData21.count > 0 else {
+            print("ERROR: no SMA 21 data!")
             return nil
         }
 
-        guard let emaData21 = ema(for: pair, period: 21), emaData21.count > 0 else {
-            print("ERROR: no EMA 21 data!")
+        guard let smaData7 = sma(for: pair, period: 7), smaData7.count > 0 else {
+            print("ERROR: no SMA 7 data!")
             return nil
         }
 
-        guard let emaData7 = ema(for: pair, period: 7), emaData7.count > 0 else {
-            print("ERROR: no EMA 7 data!")
-            return nil
+        let priceData = collector.data(for: pair)
+
+        if smaData7[smaData7.count - 2].price < smaData21[smaData21.count - 2].price && smaData7.last!.price > smaData21.last!.price {
+            //penetration from down to up
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .canBuy)
+//            let buyTaskData = createInitialBuyData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
+        } else if smaData7[smaData7.count - 2].price > smaData21[smaData21.count - 2].price && smaData7.last!.price < smaData21.last!.price {
+            //penetration from up to down
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .canSell)
+        } else {
+            //no changes
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .unknown)
         }
 
-//        let lastEMAPrice = emaData.last!.price//XXX
-//
-//        if bestBuyPrice < lastEMAPrice && trendIsIncreasing(emaData: emaData) {
-//            print("bestBuyPrice: \(bestBuyPrice) < lastEMAPrice: \(lastEMAPrice)")
-//
-//            let taskData = createInitialData(pair: pair, bestBuyPrice: bestBuyPrice)
-//
-//            log(pair: pair, successfull: true)
-//
-//            return taskData
-//        } else {
-//            log(pair: pair, successfull: false)
-//
-            return nil
-//        }
+        return nil
     }
 
-    private func trendIsIncreasing(emaData: [PriceData]) -> Bool {
-        let minimumChangePercent: Double = 0.02
-        let consideredPeriod: Int = 4
-
-        guard emaData.count > consideredPeriod else {
-            print("A little of EMA data for recognizing trend.")
-            return false
-        }
-
-        let lastValue = emaData.last!.price
-        let prevValue = emaData[emaData.count - consideredPeriod].price
-
-        let diffPercent = (lastValue - prevValue) / (prevValue/100)
-
-        print("Diff \(diffPercent)%, need \(minimumChangePercent)")
-
-        return diffPercent >= minimumChangePercent
-    }
-
-    private func createInitialData(pair: String, bestBuyPrice: Double) -> TaskInitialData {
+    private func createInitialBuyData(pair: String, bestBuyPrice: Double) -> TaskInitialData? {
         let buyPrice = calculateBuyPrice(fromBestBuyPrice: bestBuyPrice)
-        let sellPrice = calculateSellPrice(fromBuyPrice: buyPrice)
 
-        let amount: Double = 0.0016 //XXX
+        let baseCurrency = Utils.baseCurrencyFrom(pair)
+        guard let amount = Settings.orderAmounts[baseCurrency] else {
+            print("ERROR: we don't have defined order amount for \(baseCurrency)")
+            return nil
+        }
+
         let cleanBuyQuantity = amount / buyPrice
         let buyQuantityWithFee = cleanBuyQuantity - cleanBuyQuantity/100*Settings.feePercent
-        let buyQuantity = Double(round(100000000*buyQuantityWithFee)/100000000)
+        let buyQuantity = Utils.ourRound(buyQuantityWithFee)
 
-        let cleanSellQuantity = buyQuantity
-        let sellQuantityWithFee = cleanSellQuantity - cleanSellQuantity/100*Settings.feePercent
-        let sellQuantity = Double(round(100000000*sellQuantityWithFee)/100000000)
-
-        return TaskInitialData(pair: pair, buyPrice: buyPrice, buyQuantity: buyQuantity, sellPrice: sellPrice, sellQuantity: sellQuantity)
+        return TaskInitialData(pair: pair, type: .buy, price: buyPrice, quantity: buyQuantity)
     }
+
+//    private func createInitialSellData(pair: String, bestBuyPrice: Double) -> TaskInitialData {
+//        let buyPrice = calculateBuyPrice(fromBestBuyPrice: bestBuyPrice)
+//        let sellPrice = calculateSellPrice(fromBuyPrice: buyPrice)
+//
+//        let amount: Double = 0.0016 //XXX
+//        let cleanBuyQuantity = amount / buyPrice
+//        let buyQuantityWithFee = cleanBuyQuantity - cleanBuyQuantity/100*Settings.feePercent
+//        let buyQuantity = Double(round(100000000*buyQuantityWithFee)/100000000)
+//
+//        let cleanSellQuantity = buyQuantity
+//        let sellQuantityWithFee = cleanSellQuantity - cleanSellQuantity/100*Settings.feePercent
+//        let sellQuantity = Double(round(100000000*sellQuantityWithFee)/100000000)
+//
+//        return TaskInitialData(pair: pair, buyPrice: buyPrice, buyQuantity: buyQuantity, sellPrice: sellPrice, sellQuantity: sellQuantity)
+//    }
 
     private func calculateBuyPrice(fromBestBuyPrice bestBuyPrice: Double) -> Double {
         let diffPercent = Settings.orderPriceDiffBuyPercent
@@ -125,7 +112,7 @@ class DataAnalyzer {
         return orderBuyPrice
     }
 
-    private func calculateSellPrice(fromBuyPrice buyPrice: Double) -> Double {
+    private func calculateSellPrice(fromBuyPrice buyPrice: Double) -> Double {//XXX need?
         let diffPercent = Settings.minimalProfitPercent + Settings.feePercent * 2
         let diff = buyPrice/100 * Double(diffPercent)
         let orderSellPrice: Double = buyPrice + diff
@@ -133,18 +120,16 @@ class DataAnalyzer {
         return orderSellPrice
     }
 
-    private func bestCurrentPrice(from orderBook: OrderBook, type: OrderType) -> Double? {
-        let formatter = NumberFormatter()
-        formatter.decimalSeparator = "."
+    private func sma(for pair: String, period: Int) -> [PriceData]? {
+        let priceData = collector.data(for: pair)
 
-        let bestPrice: Double?
-        if type == .buy {
-            bestPrice = formatter.number(from: orderBook.bid_top)?.doubleValue
-        } else {
-            bestPrice = formatter.number(from: orderBook.ask_top)?.doubleValue
+        let minimumDataCount = period * 2
+        guard priceData.count >= minimumDataCount else {
+            print("Not enough data count for SMA, only \(priceData.count), we need \(minimumDataCount)")
+            return nil
         }
 
-        return bestPrice
+        return calculateSMA(data: priceData, step: period)
     }
 
     private func ema(for pair: String, period: Int) -> [PriceData]? {
@@ -152,33 +137,52 @@ class DataAnalyzer {
 
         let minimumDataCount = period * 2
         guard priceData.count >= minimumDataCount else {
-            print("Not enough data count, only \(priceData.count), we need \(minimumDataCount)")
+            print("Not enough data count for EMA, only \(priceData.count), we need \(minimumDataCount)")
             return nil
         }
 
         return calculateEMA(data: priceData, step: period)
     }
 
-    private func log(pair: String, successfull: Bool) {//XXX
-//        let priceData = collector.data(for: pair)
-//        let emaData = ema(for: pair)!
-//
-//        let priceDataSlice = Array(priceData[priceData.count - emaData.count ..< priceData.count])
-//
-//        let filePrefix = successfull ? "SUCCESS" : "NOT"
-//        let fileName = "\(filePrefix)-\(pair)-\(dateFormatter.string(from: Date())).csv"
-//        let fileURL = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName, dataPath: dataPath)
-//        let fileHandler = try! FileHandle(forWritingTo: fileURL)
-//
-//        for i in 0 ..< emaData.count {
-//            let dateString = dateFormatter.string(from: priceDataSlice[i].date)
-//            let string = "\(dateString),\(priceDataSlice[i].price),\(emaData[i].price)\n"
-//
-//            fileHandler.seekToEndOfFile()
-//            fileHandler.write(string.data(using: .utf8)!)
-//        }
-//
-//        fileHandler.closeFile()
+    private enum LogType: String {
+        case canBuy = "canBuy", canSell = "canSell", unknown = "unknown"
+    }
+
+    private func log(pair: String, datas: [String: [PriceData]], type: LogType) {
+        var minDataCount = Int.max
+        for (_, data) in datas {
+            if data.count < minDataCount {
+                minDataCount = data.count
+            }
+        }
+
+        var slicedDatas = [[PriceData]]()
+        for (_, data) in datas {
+            let range = (data.count - minDataCount) ..< data.count
+            slicedDatas.append(Array(data[range]))
+        }
+
+        let filePrefix = type.rawValue.uppercased()
+        let keysString = datas.keys.joined(separator: "-")
+        let fileName = "\(filePrefix)-\(pair)-\(keysString)-\(dateFormatter.string(from: Date())).csv"
+        let fileURL = FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: fileName, folder: "logs")
+        let fileHandler = try! FileHandle(forWritingTo: fileURL)
+
+        for i in 0 ..< minDataCount {
+            let dateString = dateFormatter.string(from: slicedDatas[0][i].date)
+            var string = dateString
+
+            for l in 0 ..< datas.count {
+                string += ";" + Utils.doubleExcelFormatter.string(from: NSNumber(value: slicedDatas[l][i].price))!
+            }
+
+            string += "\n"
+
+            fileHandler.seekToEndOfFile()
+            fileHandler.write(string.data(using: .utf8)!)
+        }
+
+        fileHandler.closeFile()
     }
 
     private let dateFormatter: DateFormatter = {

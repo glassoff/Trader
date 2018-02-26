@@ -20,19 +20,19 @@ class EnterWorker {
         self.fakeEnter = fakeEnter
     }
 
-    func work() {
+    func work(data: [TickerItem]) {
         let analyzer = DataAnalyzer(pairs: Settings.pairs, collector: self.collector, fakeEnter: self.fakeEnter)
-        var datasForEnter = analyzer.findPairsForEnter()
+        var datasForEnter = analyzer.findPairsForEnter(tickData: data)
         datasForEnter.shuffle()
 
-        guard let openOrders = Utils.currentOpenOrders() else {
-            print("ERROR: open orders is nil! Pass this entering.")
-            return
-        }
-
-        for dataForEnter in datasForEnter {
-            self.tryToEnter(withData: dataForEnter, currentOpenOrders: openOrders)
-        }
+//        guard let openOrders = Utils.currentOpenOrders() else {//XXX test
+//            print("ERROR: open orders is nil! Pass this entering.")
+//            return
+//        }
+//
+//        for dataForEnter in datasForEnter {
+//            self.tryToEnter(withData: dataForEnter, currentOpenOrders: openOrders)
+//        }
     }
 
     private func tryToEnter(withData data: TaskInitialData, currentOpenOrders: [Order]) {
@@ -50,7 +50,7 @@ class EnterWorker {
             return
         }
 
-        if let order = Utils.placeOrder(pair: data.pair, type: .buy, orderPrice: data.buyPrice, quantity: data.buyQuantity) {
+        if let order = Utils.placeOrder(pair: data.pair, type: data.type, orderPrice: data.price, quantity: data.quantity) {
             monitor.addBuyOrder(order, with: data)
         }
     }
@@ -60,7 +60,7 @@ class EnterWorker {
 extension EnterWorker: DataCollectorObserver {
 
     func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem]) {
-        work()
+        work(data: data)
     }
 
 }

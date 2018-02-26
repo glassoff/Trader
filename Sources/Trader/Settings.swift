@@ -19,10 +19,12 @@ struct Settings {
     static let userApiSecretKey = "S-89bc12d72448e8711bdc9e612b0bb484bfc051c7"
 
     static let orderPriceDiffBuyPercent: Double = 0.04
-    static let minimalProfitPercent: Double = 0.5
+    static let minimalProfitPercent: Double = 0.5//XXX need?
     static let feePercent: Double = 0.2
 
     static let pairs = ["BCH_BTC", "DASH_BTC", "ETH_BTC", "ETC_BTC", "LTC_BTC", "ZEC_BTC", "XMR_BTC", "WAVES_BTC", "KICK_BTC", "XRP_BTC", "BTC_USD", "BCH_USD", "DASH_USD", "ETH_USD", "ETC_USD", "LTC_USD", "ZEC_USD", "XRP_USD", "XMR_USD"]
+
+    static let orderAmounts: [String: Double] = ["BTC": 0.0016]
 
     static let cancelBuyOrderPeriod: TimeInterval = 60*5
 

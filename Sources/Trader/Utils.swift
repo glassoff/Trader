@@ -45,6 +45,13 @@ class Utils {
         }
     }
 
+    class func baseCurrencyFrom(_ pair: String) -> String {
+        let currencies = pair.split(separator: "_")
+        assert(currencies.count == 2, "Incorrect pair string: \(pair)")
+
+        return String(currencies.last!)
+    }
+
     class func ourRound(_ value: Double) -> Double {
         let base = pow(10, Double(Settings.afterPointDigits))
         return round(base * value) / base
