@@ -70,13 +70,13 @@ class Utils {
         let formatter = NumberFormatter()
         formatter.decimalSeparator = ","
         formatter.maximumFractionDigits = Settings.afterPointDigits
-//        formatter.groupingSeparator = ""
+//        formatter.groupingSeparator = ""//XXX
 //        formatter.thousandSeparator = ""
 //        formatter.hasThousandSeparators = false
 //        formatter.usesGroupingSeparator = false
 //        formatter.alwaysShowsDecimalSeparator = false
 //        formatter.currencyGroupingSeparator = ""
-//        formatter.numberStyle = .decimal
+        formatter.numberStyle = .decimal
 
         return formatter
     }()
