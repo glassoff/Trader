@@ -66,7 +66,6 @@ class DataAnalyzer {
             log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .canSell)
         } else {
             //no changes
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .unknown)
         }
 
         return nil
