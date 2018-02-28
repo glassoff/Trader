@@ -18,6 +18,8 @@ struct Settings {
     static let userApiKey = "K-cc72c6d63eb0f6476b3f8f7438fb74764077e373"
     static let userApiSecretKey = "S-89bc12d72448e8711bdc9e612b0bb484bfc051c7"
 
+    static let partOfHourInterval: Int = 4
+
     static let orderPriceDiffBuyPercent: Double = 0.04
     static let minimalProfitPercent: Double = 0.5//XXX need?
     static let feePercent: Double = 0.2

@@ -69,8 +69,14 @@ class Utils {
     static var doubleExcelFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.decimalSeparator = ","
-        formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = Settings.afterPointDigits
+        formatter.groupingSeparator = ""
+        formatter.thousandSeparator = ""
+        formatter.hasThousandSeparators = false
+        formatter.usesGroupingSeparator = false
+        formatter.alwaysShowsDecimalSeparator = false
+        formatter.currencyGroupingSeparator = ""
+        formatter.numberStyle = .decimal
 
         return formatter
     }()

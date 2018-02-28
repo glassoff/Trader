@@ -45,8 +45,8 @@ class DataAnalyzer {
 
         print("Check of entering to \(pair)...")
 
-        guard let smaData21 = sma(for: pair, period: 21), smaData21.count > 0 else {
-            print("ERROR: no SMA 21 data!")
+        guard let smaData30 = sma(for: pair, period: 30), smaData30.count > 0 else {
+            print("ERROR: no SMA 30 data!")
             return nil
         }
 
@@ -57,16 +57,16 @@ class DataAnalyzer {
 
         let priceData = collector.data(for: pair)
 
-        if smaData7[smaData7.count - 2].price < smaData21[smaData21.count - 2].price && smaData7.last!.price > smaData21.last!.price {
+        if smaData7[smaData7.count - 2].price < smaData30[smaData30.count - 2].price && smaData7.last!.price > smaData30.last!.price {
             //penetration from down to up
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .canBuy)
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .canBuy)
 //            let buyTaskData = createInitialBuyData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
-        } else if smaData7[smaData7.count - 2].price > smaData21[smaData21.count - 2].price && smaData7.last!.price < smaData21.last!.price {
+        } else if smaData7[smaData7.count - 2].price > smaData30[smaData30.count - 2].price && smaData7.last!.price < smaData30.last!.price {
             //penetration from up to down
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .canSell)
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .canSell)
         } else {
             //no changes
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA21": smaData21], type: .unknown)
+            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .unknown)
         }
 
         return nil

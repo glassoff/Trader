@@ -17,7 +17,7 @@ struct PriceData {
 class DataCollector {
 
     private let pairs: [String]
-    private let partOfHourInterval: Int = 4 // 1/partOfHourInterval (1/4 = 15 min)
+    private let partOfHourInterval: Int = Settings.partOfHourInterval // 1/partOfHourInterval (1/4 = 15 min)
     private let maxNumberOfDataLines = 700
     private let notCollect: Bool
 
