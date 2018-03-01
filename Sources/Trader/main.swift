@@ -12,10 +12,9 @@ print("Check formatter...")
 
 let testFormatter = NumberFormatter()
 testFormatter.locale = Locale(identifier: "en_US_POSIX")
-testFormatter.decimalSeparator = "||"
+testFormatter.decimalSeparator = "."
 testFormatter.numberStyle = .decimal
 testFormatter.allowsFloats = true
-testFormatter.alwaysShowsDecimalSeparator = true
 testFormatter.minimumFractionDigits = 8
 testFormatter.hasThousandSeparators = false
 testFormatter.usesGroupingSeparator = false
