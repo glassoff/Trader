@@ -11,8 +11,8 @@ import Foundation
 print("Check formatter...")
 Utils.checkFormatter(name: "Double formatter", formatter: Utils.doubleFormatter, n: Double(0.00000343))
 Utils.checkFormatter(name: "Double formatter", formatter: Utils.doubleFormatter, n: Double(12340.00000343))
-Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleFormatter, n: Double(0.00000343))
-Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleFormatter, n: Double(12340.00000343))
+Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleExcelFormatter, n: Double(0.00000343))
+Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleExcelFormatter, n: Double(12340.00000343))
 print("done!")
 assert(false)//XXX
 
