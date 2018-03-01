@@ -16,6 +16,8 @@ testFormatter.decimalSeparator = "||"
 testFormatter.numberStyle = .decimal
 testFormatter.allowsFloats = true
 testFormatter.alwaysShowsDecimalSeparator = true
+testFormatter.minimumFractionDigits = 8
+testFormatter.hasThousandSeparators = false
 Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(12340.00000343))
 
 
