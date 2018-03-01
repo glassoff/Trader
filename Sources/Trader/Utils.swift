@@ -92,7 +92,7 @@ class Utils {
 
     static func checkFormatter(name: String, formatter: NumberFormatter, n: Double) {
         print(formatter)
-        print(formatter.locale)
+        print(formatter.locale.identifier)
         print(formatter.decimalSeparator)
         let str = formatter.string(from: NSNumber(value: n))!
         let ns = formatter.number(from: str)!.doubleValue
