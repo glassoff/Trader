@@ -91,13 +91,6 @@ class PairTradeItem: Decodable {
     let date: Int
 
     lazy var priceValue: Double = {
-        return priceFormatter.number(from: price)!.doubleValue
-    }()
-
-    private lazy var priceFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.decimalSeparator = "."
-
-        return formatter
+        return Utils.doubleFormatter.number(from: price)!.doubleValue
     }()
 }

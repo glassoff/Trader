@@ -89,7 +89,7 @@ private extension Order {
 
     init?(serverOrder: OrderDecoder) {
         guard let orderId = Int(serverOrder.order_id),
-            let quantity = priceFormatter.number(from: serverOrder.quantity)?.doubleValue,
+            let quantity = Utils.doubleFormatter.number(from: serverOrder.quantity)?.doubleValue,
             let type = OrderType(rawValue: serverOrder.type) else {
             return nil
         }
@@ -100,10 +100,3 @@ private extension Order {
     }
 
 }
-
-private let priceFormatter: NumberFormatter = {
-    let formatter = NumberFormatter()
-    formatter.decimalSeparator = "."
-
-    return formatter
-}()
