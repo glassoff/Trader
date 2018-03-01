@@ -60,7 +60,7 @@ class Utils {
     static var doubleFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
 //        formatter.locale = Locale(identifier: "en_US_POSIX")
-//        formatter.decimalSeparator = "."
+        formatter.decimalSeparator = "|"
 //        formatter.maximumFractionDigits = Settings.afterPointDigits
 //        formatter.groupingSeparator = ""
 //        formatter.thousandSeparator = ""
