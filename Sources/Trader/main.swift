@@ -19,6 +19,8 @@ testFormatter.alwaysShowsDecimalSeparator = true
 testFormatter.minimumFractionDigits = 8
 testFormatter.hasThousandSeparators = false
 testFormatter.usesGroupingSeparator = false
+
+Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(0.00000343))
 Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(12340.00000343))
 
 
