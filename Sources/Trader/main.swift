@@ -8,7 +8,7 @@
 
 import Foundation
 
-print("Check formatter...")
+print("Check formatters...")
 
 let testFormatter = NumberFormatter()
 testFormatter.locale = Locale(identifier: "en_US_POSIX")

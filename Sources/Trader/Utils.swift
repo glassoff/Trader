@@ -74,26 +74,19 @@ class Utils {
         let formatter = NumberFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.decimalSeparator = ","
-        formatter.maximumFractionDigits = Settings.afterPointDigits
-        formatter.groupingSeparator = ""
-        formatter.thousandSeparator = ""
+        formatter.numberStyle = .decimal
+        formatter.allowsFloats = true
+        formatter.minimumFractionDigits = Settings.afterPointDigits
         formatter.hasThousandSeparators = false
         formatter.usesGroupingSeparator = false
-        formatter.alwaysShowsDecimalSeparator = false
-        formatter.currencyGroupingSeparator = ""
-        formatter.numberStyle = .decimal
 
         return formatter
     }()
 
     static func checkFormatter(name: String, formatter: NumberFormatter, n: Double) {
-        print(formatter)
-        print(formatter.locale.identifier)
-        print(formatter.decimalSeparator)
         let str = formatter.string(from: NSNumber(value: n))!
         let ns = formatter.number(from: str)!.doubleValue
-//        assert(n == ns, "\(name) is incorrect!, \(n) == \(ns), string: \(str)")//XXX
-        print("\(name): \(n) == \(ns), string: \(str)")
+        assert(n == ns, "\(name) is incorrect!, \(n) == \(ns), string: \(str)")
     }
 
 }
