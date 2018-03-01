@@ -91,6 +91,8 @@ class Utils {
 
     static func checkFormatter(name: String, formatter: NumberFormatter, n: Double) {
         print(formatter)
+        print(formatter.locale)
+        print(formatter.decimalSeparator)
         let str = formatter.string(from: NSNumber(value: n))!
         let ns = formatter.number(from: str)!.doubleValue
 //        assert(n == ns, "\(name) is incorrect!, \(n) == \(ns), string: \(str)")//XXX
