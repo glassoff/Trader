@@ -14,6 +14,7 @@ let testFormatter = NumberFormatter()
 testFormatter.locale = Locale(identifier: "en_US_POSIX")
 testFormatter.decimalSeparator = "||"
 testFormatter.numberStyle = .decimal
+testFormatter.generatesDecimalNumbers = true
 Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(12340.00000343))
 
 
