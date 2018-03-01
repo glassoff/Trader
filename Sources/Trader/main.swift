@@ -9,26 +9,11 @@
 import Foundation
 
 print("Check formatters...")
-
-let testFormatter = NumberFormatter()
-testFormatter.locale = Locale(identifier: "en_US_POSIX")
-testFormatter.decimalSeparator = "."
-testFormatter.numberStyle = .decimal
-testFormatter.allowsFloats = true
-testFormatter.minimumFractionDigits = 8
-testFormatter.hasThousandSeparators = false
-testFormatter.usesGroupingSeparator = false
-
-Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(0.00000343))
-Utils.checkFormatter(name: "TEST", formatter: testFormatter, n: Double(12340.00000343))
-
-
 Utils.checkFormatter(name: "Double formatter", formatter: Utils.doubleFormatter, n: Double(0.00000343))
 Utils.checkFormatter(name: "Double formatter", formatter: Utils.doubleFormatter, n: Double(12340.00000343))
 Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleExcelFormatter, n: Double(0.00000343))
 Utils.checkFormatter(name: "Excel formatter", formatter: Utils.doubleExcelFormatter, n: Double(12340.00000343))
 print("done!")
-assert(false)//XXX
 
 let application = Application()
 
