@@ -89,6 +89,13 @@ class Utils {
         return formatter
     }()
 
+    static func checkFormatter(name: String, formatter: NumberFormatter, n: Double) {
+        let str = formatter.string(from: NSNumber(value: n))!
+        let ns = formatter.number(from: str)!.doubleValue
+        assert(n == ns, "\(name) is incorrect!, \(n) == \(ns), string: \(str)")
+        print("\(n) == \(ns), string: \(str)")
+    }
+
 }
 
 extension Array {
