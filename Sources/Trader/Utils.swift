@@ -59,15 +59,15 @@ class Utils {
 
     static var doubleFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.decimalSeparator = "."
-//        formatter.maximumFractionDigits = Settings.afterPointDigits//XXX
-        formatter.groupingSeparator = ""
-        formatter.thousandSeparator = ""
-        formatter.hasThousandSeparators = false
-        formatter.usesGroupingSeparator = false
-        formatter.alwaysShowsDecimalSeparator = false
-        formatter.currencyGroupingSeparator = ""
+//        formatter.locale = Locale(identifier: "en_US_POSIX")
+//        formatter.decimalSeparator = "."
+//        formatter.maximumFractionDigits = Settings.afterPointDigits
+//        formatter.groupingSeparator = ""
+//        formatter.thousandSeparator = ""
+//        formatter.hasThousandSeparators = false
+//        formatter.usesGroupingSeparator = false
+//        formatter.alwaysShowsDecimalSeparator = false
+//        formatter.currencyGroupingSeparator = ""
         formatter.numberStyle = .decimal
 
         return formatter
