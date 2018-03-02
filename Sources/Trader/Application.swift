@@ -15,6 +15,8 @@ class Application {
     private var collector: DataCollector!
     private var monitor: OrdersMonitor!
     private var enterWorker: EnterWorker!
+    private var assetsManager: AssetsManager!
+    private var lossStopper: LossStopper!
 
     func main(dataPath: String, onlyCollect: Bool, withoutCollect: Bool, fakeEnter: Bool) {
         self.dataPath = dataPath
@@ -31,11 +33,16 @@ class Application {
         if onlyCollect {
             print("Only Collect mode")
         } else {
-            monitor = OrdersMonitor()
+            assetsManager = AssetsManager()
+
+            monitor = OrdersMonitor(delegate: assetsManager)
             monitor.start()
 
             enterWorker = EnterWorker(collector: collector, monitor: monitor, fakeEnter: fakeEnter)
             collector.addObserver(enterWorker)
+
+            lossStopper = LossStopper()
+            collector.addObserver(lossStopper)
         }
     }
 

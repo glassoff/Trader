@@ -8,7 +8,7 @@
 
 import Foundation
 
-private struct TaskData: Codable {
+struct TaskData: Codable {
     let pair: String
     let orderId: Int
     let quantity: Double
@@ -39,11 +39,19 @@ private struct TaskData: Codable {
     }
 }
 
+protocol OrdersMonitorDelegate: class {
+    func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: TaskData)
+}
+
 class OrdersMonitor {
+
+    weak var delegate: OrdersMonitorDelegate!
 
     private var objects = [TaskData]()
 
-    init() {
+    init(delegate: OrdersMonitorDelegate) {
+        self.delegate = delegate
+
         loadObjects()
     }
 
@@ -112,15 +120,11 @@ class OrdersMonitor {
     }
 
     private func objectWasClosed(object: TaskData) -> Bool {
-        print("Closed order \(object.orderId) for \(object.pair)")
+        print("Closed \(object.type.rawValue) order \(object.orderId) for \(object.pair)")
 
-        if object.type == .sell {
-            print("SELL ORDER WAS CLOSED!!!")
-            return true
-        } else {
-            print("Buy order was closed!")
-            return true
-        }
+        delegate.ordersMonitor(self, orderWasClose: object)
+
+        return true
     }
 
     private func orderIsFullOpen(object: TaskData, withServerOrder serverOrder: Order) -> Bool {

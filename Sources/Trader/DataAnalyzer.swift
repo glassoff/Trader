@@ -76,7 +76,7 @@ class DataAnalyzer {
 
         let baseCurrency = Utils.baseCurrencyFrom(pair)
         guard let amount = Settings.orderAmounts[baseCurrency] else {
-            print("ERROR: we don't have defined order amount for \(baseCurrency)")
+            print("ERROR: we don't have defined amount for \(baseCurrency)")
             return nil
         }
 
