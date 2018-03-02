@@ -45,27 +45,28 @@ class DataAnalyzer {
 
         print("Check of entering to \(pair)...")
 
-        guard let smaData30 = sma(for: pair, period: 30), smaData30.count > 0 else {
-            print("ERROR: no SMA 30 data!")
+        guard let emaData30 = ema(for: pair, period: 30), emaData30.count > 0 else {
+            print("ERROR: no EMA 30 data!")
             return nil
         }
 
-        guard let smaData7 = sma(for: pair, period: 7), smaData7.count > 0 else {
-            print("ERROR: no SMA 7 data!")
+        guard let emaData7 = ema(for: pair, period: 7), emaData7.count > 0 else {
+            print("ERROR: no EMA 7 data!")
             return nil
         }
 
         let priceData = collector.data(for: pair)
 
-        if smaData7[smaData7.count - 2].price < smaData30[smaData30.count - 2].price && smaData7.last!.price > smaData30.last!.price {
+        if emaData7[emaData7.count - 2].price < emaData30[emaData30.count - 2].price && emaData7.last!.price > emaData30.last!.price {
             //penetration from down to up
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .canBuy)
+            log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canBuy)
 //            let buyTaskData = createInitialBuyData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
-        } else if smaData7[smaData7.count - 2].price > smaData30[smaData30.count - 2].price && smaData7.last!.price < smaData30.last!.price {
+        } else if emaData7[emaData7.count - 2].price > emaData30[emaData30.count - 2].price && emaData7.last!.price < emaData30.last!.price {
             //penetration from up to down
-            log(pair: pair, datas: ["ALL": priceData, "SMA7": smaData7, "SMA30": smaData30], type: .canSell)
+            log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canSell)
         } else {
             //no changes
+//            log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .unknown)
         }
 
         return nil
