@@ -9,17 +9,16 @@ import Foundation
 
 struct Asset: Codable {
     let pair: String
+    let buyPrice: Double
     let quantity: Double
+    let baseQuantity: Double
     let createdAt: Date
-    //XXX
-    //по какой цене был куплен
-    //сколько изначальнйо моенты было потрачено на покупку (чтобы рассчитать профит)
-    
-
 
     private enum CodingKeys: String, CodingKey {
         case pair
+        case buyPrice
         case quantity
+        case baseQuantity
         case createdAt
     }
 }
@@ -36,10 +35,17 @@ extension Asset {
 
 class AssetsManager {
 
-    private var assets = [Asset]()
+    private(set) var assets = [Asset]()
 
     init() {
         loadAssets()
+    }
+
+    func addAsset(_ asset: Asset) {
+        assets.append(asset)
+        saveAssets()
+
+        print("Added asset: \(asset)")
     }
 
     private func loadAssets() {
@@ -64,21 +70,14 @@ class AssetsManager {
         return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "assets-data.json")
     }
 
-    private func addAsset(info: TaskData) {
-        let asset = Asset(info: info)
-        assets.append(asset)
-        saveAssets()
-
-        print("Added asset: \(asset)")
-    }
-
 }
 
 extension AssetsManager: OrdersMonitorDelegate {
 
     func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: TaskData) {
         if info.type == .buy {
-            addAsset(info: info)
+            let asset = Asset(info: info)
+            addAsset(asset)
         }
     }
 
