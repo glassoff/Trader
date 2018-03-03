@@ -57,7 +57,8 @@ class DataAnalyzer {
 
         let priceData = collector.data(for: pair)
 
-        if emaData7[emaData7.count - 2].price < emaData30[emaData30.count - 2].price && emaData7.last!.price > emaData30.last!.price {
+        if emaData7[emaData7.count - 2].price < emaData30[emaData30.count - 2].price && emaData7.last!.price > emaData30.last!.price
+            && isTrendUp(data: emaData30) {
             //penetration from down to up
             log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canBuy)
 //            let buyTaskData = createInitialBuyData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
@@ -70,6 +71,23 @@ class DataAnalyzer {
         }
 
         return nil
+    }
+
+    private func isTrendUp(data: [PriceData]) -> Bool {
+        let considerLength = 4
+
+        guard data.count >= considerLength else {
+            return false
+        }
+
+        let lastValue = data.last!.price
+        let prevValue = data[data.count - considerLength].price
+
+        let diff = (lastValue - prevValue) / prevValue * 100
+
+        print("Check trend is up: diff \(diff)")
+
+        return diff >= Settings.trandUpPercent
     }
 
     private func createInitialBuyData(pair: String, bestBuyPrice: Double) -> TaskInitialData? {
