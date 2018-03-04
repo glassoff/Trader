@@ -41,7 +41,7 @@ class Application {
             enterWorker = EnterWorker(collector: collector, monitor: monitor, fakeEnter: fakeEnter)
             collector.addObserver(enterWorker)
 
-            lossStopper = LossStopper(assetsManager: assetsManager)
+            lossStopper = LossStopper(assetsManager: assetsManager, ordersMonitor: monitor)
             collector.addObserver(lossStopper)
         }
     }

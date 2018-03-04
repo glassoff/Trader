@@ -16,6 +16,7 @@ enum OrderType: String {
 struct Order {
     let orderId: Int
     let pair: String
+    let price: Double
     let quantity: Double
     let type: OrderType
 }

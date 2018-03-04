@@ -106,36 +106,12 @@ class DataAnalyzer {
         return TaskInitialData(pair: pair, type: .buy, price: buyPrice, quantity: buyQuantity)
     }
 
-//    private func createInitialSellData(pair: String, bestBuyPrice: Double) -> TaskInitialData {
-//        let buyPrice = calculateBuyPrice(fromBestBuyPrice: bestBuyPrice)
-//        let sellPrice = calculateSellPrice(fromBuyPrice: buyPrice)
-//
-//        let amount: Double = 0.0016 //XXX
-//        let cleanBuyQuantity = amount / buyPrice
-//        let buyQuantityWithFee = cleanBuyQuantity - cleanBuyQuantity/100*Settings.feePercent
-//        let buyQuantity = Double(round(100000000*buyQuantityWithFee)/100000000)
-//
-//        let cleanSellQuantity = buyQuantity
-//        let sellQuantityWithFee = cleanSellQuantity - cleanSellQuantity/100*Settings.feePercent
-//        let sellQuantity = Double(round(100000000*sellQuantityWithFee)/100000000)
-//
-//        return TaskInitialData(pair: pair, buyPrice: buyPrice, buyQuantity: buyQuantity, sellPrice: sellPrice, sellQuantity: sellQuantity)
-//    }
-
     private func calculateBuyPrice(fromBestBuyPrice bestBuyPrice: Double) -> Double {
         let diffPercent = Settings.orderPriceDiffBuyPercent
         let diff = bestBuyPrice/100 * Double(diffPercent)
         let orderBuyPrice: Double = bestBuyPrice + diff
 
         return orderBuyPrice
-    }
-
-    private func calculateSellPrice(fromBuyPrice buyPrice: Double) -> Double {//XXX need?
-        let diffPercent = Settings.minimalProfitPercent + Settings.feePercent * 2
-        let diff = buyPrice/100 * Double(diffPercent)
-        let orderSellPrice: Double = buyPrice + diff
-
-        return orderSellPrice
     }
 
     private func sma(for pair: String, period: Int) -> [PriceData]? {

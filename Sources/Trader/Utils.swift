@@ -38,7 +38,7 @@ class Utils {
 
         if let creationResult = creationResult {
             print("Order created with id: \(creationResult.order_id)")
-            return Order(orderId: creationResult.order_id, pair: pair, quantity: quantity, type: type)
+            return Order(orderId: creationResult.order_id, pair: pair, price: orderPrice, quantity: quantity, type: type)
         } else {
             print("ERROR: creation order error!")
             return nil

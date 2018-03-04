@@ -13,6 +13,7 @@ struct Asset: Codable {
     let quantity: Double
     let baseQuantity: Double
     let createdAt: Date
+    let uid: String
 
     private enum CodingKeys: String, CodingKey {
         case pair
@@ -20,15 +21,31 @@ struct Asset: Codable {
         case quantity
         case baseQuantity
         case createdAt
+        case uid
+    }
+
+    static func == (lhs: Asset, rhs: Asset) -> Bool {
+        return lhs.uid == rhs.uid
     }
 }
 
 extension Asset {
 
-    init(info: TaskData) {
+    init(info: OrderData) {
         self.pair = info.pair
+        self.buyPrice = info.price
         self.quantity = info.quantity
+
+        let baseQuantityValue = Settings.orderAmounts[Utils.baseCurrencyFrom(info.pair)]
+        assert(baseQuantityValue != nil, "Base quantity in nil for \(info.pair)")
+        self.baseQuantity = baseQuantityValue!
+
         self.createdAt = Date()
+        self.uid = Asset.generateUID(pair: info.pair)
+    }
+
+    private static func generateUID(pair: String) -> String {
+        return "\(Date().timeIntervalSince1970)-\(pair)"
     }
 
 }
@@ -46,6 +63,28 @@ class AssetsManager {
         saveAssets()
 
         print("Added asset: \(asset)")
+    }
+
+    func removeAsset(_ asset: Asset) -> Bool {
+        let index = assets.index(where: { $0 == asset })
+        if let index = index {
+            assets.remove(at: index)
+            saveAssets()
+
+            return true
+        }
+
+        return false
+    }
+
+    func assetWithUID(_ uid: String) -> Asset? {
+        for asset in assets {
+            if asset.uid == uid {
+                return asset
+            }
+        }
+
+        return nil
     }
 
     private func loadAssets() {
@@ -70,14 +109,33 @@ class AssetsManager {
         return FileManager.default.createIfNeedsAndReturnFileURLForTradeData(fileName: "assets-data.json")
     }
 
+    private func showResult(info: OrderData, asset: Asset) {
+        let diffPercent = ((info.price - asset.buyPrice) / asset.buyPrice) * 100
+        let diffPercentWithFee = diffPercent - Settings.feePercent*2
+        let baseResult = asset.baseQuantity + (asset.baseQuantity / 100) * diffPercentWithFee
+        let baseCurrency = Utils.baseCurrencyFrom(info.pair)
+        print("==== RESULT: \(info.pair), \(diffPercent)%, with fee: \(diffPercentWithFee), \(baseResult) \(baseCurrency)")
+    }
+
 }
 
 extension AssetsManager: OrdersMonitorDelegate {
 
-    func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: TaskData) {
+    func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: OrderData) {
         if info.type == .buy {
             let asset = Asset(info: info)
             addAsset(asset)
+        } else {
+            if let asset = assetWithUID(info.assetUID) {
+                showResult(info: info, asset: asset)
+
+                let removeResult = removeAsset(asset)
+                if removeResult == false {
+                    print("ERROR: we couldn't remove asset!")
+                }
+            } else {
+                print("ERROR: can't find asset with UID \(info.assetUID) for removing!")
+            }
         }
     }
 

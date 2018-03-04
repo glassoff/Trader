@@ -10,9 +10,11 @@ import Foundation
 class LossStopper {
 
     private let assetsManager: AssetsManager
+    private let ordersMonitor: OrdersMonitor
 
-    init(assetsManager: AssetsManager) {
+    init(assetsManager: AssetsManager, ordersMonitor: OrdersMonitor) {
         self.assetsManager = assetsManager
+        self.ordersMonitor = ordersMonitor
     }
 
     private func process(data: [TickerItem]) {
@@ -35,7 +37,7 @@ class LossStopper {
         let sellPrice = tickData.currentBestSellPrice
 
         if let order = Utils.placeOrder(pair: asset.pair, type: .sell, orderPrice: sellPrice, quantity: asset.quantity) {
-            //XXX
+            ordersMonitor.addSellOrder(order, of: asset)
         } else {
             print("ERROR: couldn't place stop loss sell order!")
         }

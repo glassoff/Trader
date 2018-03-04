@@ -51,11 +51,6 @@ assert(!(argOnlyCollect && argWithoutCollect), "--only-collect and --without-col
 
 application.main(dataPath: dataPath, onlyCollect: argOnlyCollect, withoutCollect: argWithoutCollect, fakeEnter: argFakeEnter)
 
-//let assetsManager = AssetsManager()
-//let asset = Asset(pair: "ETC_BTC", quantity: 234.234234, createdAt: Date())
-//assetsManager.addAsset(asset)
-//assert(false)
-
 while true {
     _ = RunLoop.current.run(mode: .defaultRunLoopMode, before: Date(timeIntervalSinceNow: 0.1))
 }

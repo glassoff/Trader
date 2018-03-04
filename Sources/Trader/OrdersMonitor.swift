@@ -8,12 +8,14 @@
 
 import Foundation
 
-struct TaskData: Codable {
+struct OrderData: Codable {
     let pair: String
     let orderId: Int
+    let price: Double
     let quantity: Double
     let typeString: String
     let createdAt: Date
+    let assetUID: String
 
     var type: OrderType {
         return OrderType(rawValue: typeString)!
@@ -22,32 +24,37 @@ struct TaskData: Codable {
     private enum CodingKeys: String, CodingKey {
         case pair
         case orderId
+        case price
         case quantity
         case typeString
         case createdAt
+        case assetUID
     }
 
-    init(order: Order, initialData: TaskInitialData?) {
-        if order.type == .buy && initialData == nil {
-            assert(false, "Initial data for buy order is nil!")
+    init(order: Order, assetUID: String? = nil) {
+        if order.type == .sell && assetUID == nil {
+            assert(false, "ERROR: No asset UID for sell order!")
         }
+
         self.pair = order.pair
         self.orderId = order.orderId
+        self.price = order.price
         self.quantity = order.quantity
         self.typeString = order.type.rawValue
         self.createdAt = Date()
+        self.assetUID = assetUID ?? ""
     }
 }
 
 protocol OrdersMonitorDelegate: class {
-    func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: TaskData)
+    func ordersMonitor(_ monitor: OrdersMonitor, orderWasClose info: OrderData)
 }
 
 class OrdersMonitor {
 
     weak var delegate: OrdersMonitorDelegate!
 
-    private var objects = [TaskData]()
+    private var objects = [OrderData]()
 
     init(delegate: OrdersMonitorDelegate) {
         self.delegate = delegate
@@ -65,7 +72,7 @@ class OrdersMonitor {
         }
     }
 
-    private func addData(_ data: TaskData) {
+    private func addData(_ data: OrderData) {
         print("Add data: \(data)")
 
         objects.append(data)
@@ -103,7 +110,7 @@ class OrdersMonitor {
         }
     }
 
-    private func cancelOrderIfNeeded(object: TaskData, withServerOrder serverOrder: Order) -> Bool {
+    private func cancelOrderIfNeeded(object: OrderData, withServerOrder serverOrder: Order) -> Bool {
         print("Yet exist \(object.type.rawValue) order \(object.orderId) for \(object.pair)")
 
         guard orderIsFullOpen(object: object, withServerOrder: serverOrder) == true else {
@@ -119,7 +126,7 @@ class OrdersMonitor {
         return false
     }
 
-    private func objectWasClosed(object: TaskData) -> Bool {
+    private func objectWasClosed(object: OrderData) -> Bool {
         print("Closed \(object.type.rawValue) order \(object.orderId) for \(object.pair)")
 
         delegate.ordersMonitor(self, orderWasClose: object)
@@ -127,7 +134,7 @@ class OrdersMonitor {
         return true
     }
 
-    private func orderIsFullOpen(object: TaskData, withServerOrder serverOrder: Order) -> Bool {
+    private func orderIsFullOpen(object: OrderData, withServerOrder serverOrder: Order) -> Bool {
         print("Check order is full open...")
         print("\(serverOrder.quantity) <> \(object.quantity)")
         if serverOrder.quantity < object.quantity {
@@ -148,7 +155,7 @@ class OrdersMonitor {
 
     private func loadObjects() {
         let objectsData = try! Data(contentsOf: objectsFileURL())
-        guard let savedObjects = try? JSONDecoder().decode([TaskData].self, from: objectsData) else {
+        guard let savedObjects = try? JSONDecoder().decode([OrderData].self, from: objectsData) else {
             print("Incorrect saved monitor objects!")
             return
         }
@@ -164,14 +171,13 @@ class OrdersMonitor {
 
 extension OrdersMonitor {
 
-    func addBuyOrder(_ order: Order, with initialData: TaskInitialData) {
-        assert(order.pair == initialData.pair)
-        let buyData = TaskData(order: order, initialData: initialData)
+    func addBuyOrder(_ order: Order) {
+        let buyData = OrderData(order: order)
         addData(buyData)
     }
 
-    func addSellOrder(_ order: Order) {
-        let sellData = TaskData(order: order, initialData: nil)
+    func addSellOrder(_ order: Order, of asset: Asset) {
+        let sellData = OrderData(order: order, assetUID: asset.uid)
         addData(sellData)
     }
 

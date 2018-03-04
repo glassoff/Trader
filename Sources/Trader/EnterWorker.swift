@@ -51,7 +51,7 @@ class EnterWorker {
         }
 
         if let order = Utils.placeOrder(pair: data.pair, type: data.type, orderPrice: data.price, quantity: data.quantity) {
-            monitor.addBuyOrder(order, with: data)
+            monitor.addBuyOrder(order)
         }
     }
 

@@ -83,6 +83,7 @@ private struct OrderDecoder: Decodable {
     let pair: String
     let quantity: String
     let type: String
+    let price: String
 }
 
 private extension Order {
@@ -90,11 +91,13 @@ private extension Order {
     init?(serverOrder: OrderDecoder) {
         guard let orderId = Int(serverOrder.order_id),
             let quantity = Utils.doubleFormatter.number(from: serverOrder.quantity)?.doubleValue,
-            let type = OrderType(rawValue: serverOrder.type) else {
+            let type = OrderType(rawValue: serverOrder.type),
+            let price = Utils.doubleFormatter.number(from: serverOrder.price)?.doubleValue else {
             return nil
         }
         self.orderId = orderId
         self.pair = serverOrder.pair
+        self.price = price
         self.quantity = quantity
         self.type = type
     }
