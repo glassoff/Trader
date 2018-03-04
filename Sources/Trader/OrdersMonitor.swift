@@ -81,7 +81,6 @@ class OrdersMonitor {
     }
 
     private func tick() {
-        print("Check orders...")
         guard let openOrders = Utils.currentOpenOrders() else {
             print("ERROR: open orders nil!")
             return

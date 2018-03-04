@@ -113,8 +113,9 @@ class AssetsManager {
         let diffPercent = ((info.price - asset.buyPrice) / asset.buyPrice) * 100
         let diffPercentWithFee = diffPercent - Settings.feePercent*2
         let baseResult = asset.baseQuantity + (asset.baseQuantity / 100) * diffPercentWithFee
+        let baseDiff = baseResult - asset.baseQuantity
         let baseCurrency = Utils.baseCurrencyFrom(info.pair)
-        print("==== RESULT: \(info.pair), \(diffPercent)%, with fee: \(diffPercentWithFee), \(baseResult) \(baseCurrency)")
+        print("==== RESULT: \(info.pair), \(diffPercent)%, with fee: \(diffPercentWithFee)%, \(baseDiff) \(baseCurrency)")
     }
 
 }

@@ -53,7 +53,10 @@ class Connection<R: Response> {
     private func createAndExecuteTask(completion: (() -> Void)? = nil) {
         let onDone = { [weak self] in
             self?.semaphore?.signal()
-            completion?()
+
+            DispatchQueue.main.async {
+                completion?()
+            }
         }
 
         guard let request = request else {
@@ -77,6 +80,7 @@ class Connection<R: Response> {
             }
 
             self.resultResponse = R(data: data, error: error)
+
             onDone()
         }
 

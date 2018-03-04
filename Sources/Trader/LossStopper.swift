@@ -34,7 +34,7 @@ class LossStopper {
             print("NEED STOP LOSS of \(asset.pair) :((")
         }
 
-        let sellPrice = tickData.currentBestSellPrice
+        let sellPrice = tickData.currentBestBuyPrice
 
         if let order = Utils.placeOrder(pair: asset.pair, type: .sell, orderPrice: sellPrice, quantity: asset.quantity) {
             ordersMonitor.addSellOrder(order, of: asset)

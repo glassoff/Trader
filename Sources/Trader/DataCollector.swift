@@ -81,8 +81,6 @@ class DataCollector {
             nextMinute += minute
         }
 
-        print("Minutes for collect data \(minutes)")
-
         var components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
         var closestMinute = 0
         for minute in minutes.reversed() {
@@ -100,7 +98,7 @@ class DataCollector {
         }
         let startInterval = startDate.timeIntervalSince(Date())
 
-        print("Start collect after \(startInterval/60) minutes")
+        print("Start collect after \(startInterval/60) minutes, (interval \(partOfHourInterval)/hour)")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + startInterval) {
             self.executeStep()
