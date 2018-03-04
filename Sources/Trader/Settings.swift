@@ -20,7 +20,7 @@ struct Settings {
 
     static let partOfHourInterval: Int = 4
 
-    static let orderPriceDiffBuyPercent: Double = 0.04
+    static let orderPriceDiffBuyPercent: Double = 0.1
     static let feePercent: Double = 0.2
     static let stopLossPercent: Double = 2
     static let trandUpPercent: Double = 0.1

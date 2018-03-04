@@ -21,10 +21,8 @@ struct Order {
     let type: OrderType
 }
 
-struct TaskInitialData {
+struct ActionInitialData {
     let pair: String
     let type: OrderType
-
     let price: Double
-    let quantity: Double
 }

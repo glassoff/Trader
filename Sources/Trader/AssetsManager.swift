@@ -87,6 +87,16 @@ class AssetsManager {
         return nil
     }
 
+    func assetForPair(_ pair: String) -> Asset? {
+        for asset in assets {
+            if asset.pair == pair {
+                return asset
+            }
+        }
+
+        return nil
+    }
+
     private func loadAssets() {
         let assetsData = try! Data(contentsOf: assetsFileURL())
         guard let savedAssets = try? JSONDecoder().decode([Asset].self, from: assetsData) else {

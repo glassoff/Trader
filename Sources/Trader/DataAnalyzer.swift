@@ -20,18 +20,18 @@ class DataAnalyzer {
         self.fakeEnter = fakeEnter
     }
 
-    func findPairsForEnter(tickData: [TickerItem]) -> [TaskInitialData] {
+    func findPairsForActions(tickData: [TickerItem]) -> [ActionInitialData] {
         guard fakeEnter == false else {
             print("Create fake enter data...")
             let tick = (tickData.filter { $0.pair == "ETH_BTC" }).first!
             let price = tick.currentBestBuyPrice
-            return [createInitialBuyData(pair: tick.pair, bestBuyPrice: price/4)!]
+            return [createInitialBuyActionData(pair: tick.pair, bestBuyPrice: price/4)!]
         }
 
-        var taskDatas = [TaskInitialData]()
+        var taskDatas = [ActionInitialData]()
 
         for pairTickData in tickData {
-            if let taskData = canEnterToPair(tickData: pairTickData) {
+            if let taskData = canMakeActionForPair(tickData: pairTickData) {
                 print("Can enter with \(taskData)")
                 taskDatas.append(taskData)
             }
@@ -40,18 +40,16 @@ class DataAnalyzer {
         return taskDatas
     }
 
-    private func canEnterToPair(tickData: TickerItem) -> TaskInitialData? {
+    private func canMakeActionForPair(tickData: TickerItem) -> ActionInitialData? {
         let pair = tickData.pair
 
-        print("Check of entering to \(pair)...")
-
         guard let emaData30 = ema(for: pair, period: 30), emaData30.count > 0 else {
-            print("ERROR: no EMA 30 data!")
+            print("ERROR: no EMA 30 data for \(pair)!")
             return nil
         }
 
         guard let emaData7 = ema(for: pair, period: 7), emaData7.count > 0 else {
-            print("ERROR: no EMA 7 data!")
+            print("ERROR: no EMA 7 data for \(pair)!")
             return nil
         }
 
@@ -61,10 +59,15 @@ class DataAnalyzer {
             && isTrendUp(data: emaData30) {
             //penetration from down to up
             log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canBuy)
-//            let buyTaskData = createInitialBuyData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
+            let buyActionData = createInitialBuyActionData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
+
+            return buyActionData
         } else if emaData7[emaData7.count - 2].price > emaData30[emaData30.count - 2].price && emaData7.last!.price < emaData30.last!.price {
             //penetration from up to down
             log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canSell)
+            let sellActionData = ActionInitialData(pair: pair, type: .sell, price: tickData.currentBestBuyPrice)
+
+            return sellActionData
         } else {
             //no changes
 //            log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .unknown)
@@ -90,20 +93,10 @@ class DataAnalyzer {
         return diff >= Settings.trandUpPercent
     }
 
-    private func createInitialBuyData(pair: String, bestBuyPrice: Double) -> TaskInitialData? {
+    private func createInitialBuyActionData(pair: String, bestBuyPrice: Double) -> ActionInitialData? {
         let buyPrice = calculateBuyPrice(fromBestBuyPrice: bestBuyPrice)
 
-        let baseCurrency = Utils.baseCurrencyFrom(pair)
-        guard let amount = Settings.orderAmounts[baseCurrency] else {
-            print("ERROR: we don't have defined amount for \(baseCurrency)")
-            return nil
-        }
-
-        let cleanBuyQuantity = amount / buyPrice
-        let buyQuantityWithFee = cleanBuyQuantity - cleanBuyQuantity/100*Settings.feePercent
-        let buyQuantity = Utils.ourRound(buyQuantityWithFee)
-
-        return TaskInitialData(pair: pair, type: .buy, price: buyPrice, quantity: buyQuantity)
+        return ActionInitialData(pair: pair, type: .buy, price: buyPrice)
     }
 
     private func calculateBuyPrice(fromBestBuyPrice bestBuyPrice: Double) -> Double {

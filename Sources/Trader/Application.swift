@@ -14,7 +14,7 @@ class Application {
 
     private var collector: DataCollector!
     private var monitor: OrdersMonitor!
-    private var enterWorker: EnterWorker!
+    private var actionMaker: ActionMaker!
     private var assetsManager: AssetsManager!
     private var lossStopper: LossStopper!
 
@@ -38,8 +38,8 @@ class Application {
             monitor = OrdersMonitor(delegate: assetsManager)
             monitor.start()
 
-            enterWorker = EnterWorker(collector: collector, monitor: monitor, fakeEnter: fakeEnter)
-            collector.addObserver(enterWorker)
+            actionMaker = ActionMaker(collector: collector, monitor: monitor, assetsManager: assetsManager, fakeEnter: fakeEnter)
+            collector.addObserver(actionMaker)
 
             lossStopper = LossStopper(assetsManager: assetsManager, ordersMonitor: monitor)
             collector.addObserver(lossStopper)
