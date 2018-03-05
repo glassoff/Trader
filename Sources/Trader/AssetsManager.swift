@@ -34,7 +34,7 @@ extension Asset {
     init(info: OrderData) {
         self.pair = info.pair
         self.buyPrice = info.price
-        self.quantity = info.quantity
+        self.quantity = info.quantity - ((info.quantity / 100) * Settings.feePercent)
 
         let baseQuantityValue = Settings.orderAmounts[Utils.baseCurrencyFrom(info.pair)]
         assert(baseQuantityValue != nil, "Base quantity in nil for \(info.pair)")
