@@ -113,7 +113,6 @@ class OrdersMonitor {
         print("Yet exist \(object.type.rawValue) order \(object.orderId) for \(object.pair)")
 
         guard orderIsFullOpen(object: object, withServerOrder: serverOrder) == true else {
-            print("Order partially closed, we can't do anything.")
             return false
         }
 
@@ -137,7 +136,6 @@ class OrdersMonitor {
         print("Check order is full open...")
         print("\(serverOrder.quantity) <> \(object.quantity)")
         if serverOrder.quantity < object.quantity {
-            print("Partially closed")
             return false
         }
 
