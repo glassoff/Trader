@@ -32,14 +32,14 @@ class LossStopper {
 
         if tickData.currentBestSellPrice <= stopPrice {
             print("NEED STOP LOSS of \(asset.pair) :((")
-        }
 
-        let sellPrice = tickData.currentBestBuyPrice
+            let sellPrice = tickData.currentBestBuyPrice
 
-        if let order = Utils.placeOrder(pair: asset.pair, type: .sell, orderPrice: sellPrice, quantity: asset.quantity) {
-            ordersMonitor.addSellOrder(order, of: asset)
-        } else {
-            print("ERROR: couldn't place stop loss sell order!")
+            if let order = Utils.placeOrder(pair: asset.pair, type: .sell, orderPrice: sellPrice, quantity: asset.quantity) {
+                ordersMonitor.addSellOrder(order, of: asset)
+            } else {
+                print("ERROR: couldn't place stop loss sell order!")
+            }
         }
     }
 
