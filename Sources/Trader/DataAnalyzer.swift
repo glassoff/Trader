@@ -32,7 +32,6 @@ class DataAnalyzer {
 
         for pairTickData in tickData {
             if let taskData = canMakeActionForPair(tickData: pairTickData) {
-                print("Can enter with \(taskData)")
                 taskDatas.append(taskData)
             }
         }

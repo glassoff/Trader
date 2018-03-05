@@ -38,8 +38,6 @@ class ActionMaker {
     }
 
     private func tryMakeAction(withData data: ActionInitialData, currentOpenOrders: [Order]) {
-        print("Try make action with \(data)")
-
         let pairOpenSellOrders = currentOpenOrders.filter { $0.pair == data.pair && $0.type == .sell }
         if pairOpenSellOrders.count > 0 {
             print("We have sell order(s) for \(data.pair) - can't make action.")
@@ -80,7 +78,6 @@ class ActionMaker {
                     monitor.addSellOrder(order, of: asset)
                 }
             } else {
-                print("We don't have \(data.pair) asset - can't make sell action.")
                 return
             }
         }
