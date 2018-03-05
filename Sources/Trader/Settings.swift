@@ -27,7 +27,7 @@ struct Settings {
 
     static let pairs = ["BCH_BTC", "DASH_BTC", "ETH_BTC", "ETC_BTC", "LTC_BTC", "ZEC_BTC", "XMR_BTC", "WAVES_BTC", "KICK_BTC", "XRP_BTC", "BTC_USD", "BCH_USD", "DASH_USD", "ETH_USD", "ETC_USD", "LTC_USD", "ZEC_USD", "XRP_USD", "XMR_USD"]
 
-    static let orderAmounts: [String: Double] = ["BTC": 0.0016]
+    static let orderAmounts: [String: Double] = ["BTC": 0.0016, "USD": 11]
 
     static let cancelBuyOrderPeriod: TimeInterval = 60*5
 
