@@ -91,4 +91,6 @@ extension ActionMaker: DataCollectorObserver {
         work(data: data)
     }
 
+    func dataCollector(_ dataCollector: DataCollector, didGetNewIntermediateData data: [TickerItem]) {}
+
 }

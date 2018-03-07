@@ -63,7 +63,9 @@ class LossStopper {
 
 extension LossStopper: DataCollectorObserver {
 
-    func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem]) {
+    func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem]) {}
+
+    func dataCollector(_ dataCollector: DataCollector, didGetNewIntermediateData data: [TickerItem]) {
         process(data: data)
     }
 

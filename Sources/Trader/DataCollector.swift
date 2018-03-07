@@ -70,6 +70,26 @@ class DataCollector {
         }
 
         collect()
+        startIntermediateCollect()
+    }
+
+    private func startIntermediateCollect() {
+        if #available(OSX 10.12, *) {
+            _ = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] (timer) in
+                self?.intermediateTick()
+            }
+        } else {
+            // Fallback on earlier versions
+        }
+    }
+
+    private func intermediateTick() {
+        performRequest { [weak self] (data) in
+            guard let `self` = self, let data = data else {
+                return
+            }
+            self.observers.forEach { $0.observer?.dataCollector(self, didGetNewIntermediateData: data) }
+        }
     }
 
     private func collect() {
@@ -106,14 +126,34 @@ class DataCollector {
     }
 
     private func executeStep() {
+        performRequest { [weak self] (data) in
+            guard let `self` = self else {
+                return
+            }
+
+            if let data = data {
+                for tickerItem in data {
+                    self.writeData(pair: tickerItem.pair, value: tickerItem.lastTradePrice)
+                }
+
+                self.observers.forEach { $0.observer?.dataCollector(self, didGetNewData: data) }
+                self.observers.forEach { $0.observer?.dataCollector(self, didGetNewIntermediateData: data) }
+            }
+
+            self.collect()
+        }
+    }
+
+    private func performRequest(completion: @escaping (_ data: [TickerItem]?) -> ()) {
         connection = Connection<TickerResponse>(request: TickerRequest())
         connection?.execute { [weak self] (response) in
             guard let `self` = self else {
+                completion(nil)
                 return
             }
             guard let tickers = response?.items else {
                 print("ERROR: tickers are nil")
-                self.collect()
+                completion(nil)
                 return
             }
 
@@ -121,17 +161,11 @@ class DataCollector {
 
             guard filteredItems.count > 0 else {
                 print("ERROR: no our pairs in tickers")
-                self.collect()
+                completion(nil)
                 return
             }
 
-            for tickerItem in filteredItems {
-                self.writeData(pair: tickerItem.pair, value: tickerItem.lastTradePrice)
-            }
-
-            self.observers.forEach { $0.observer?.dataCollector(self, didGetNewData: filteredItems) }
-
-            self.collect()
+            completion(filteredItems)
         }
     }
 
@@ -195,6 +229,7 @@ class DataCollector {
 
 protocol DataCollectorObserver: class {
     func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem])
+    func dataCollector(_ dataCollector: DataCollector, didGetNewIntermediateData data: [TickerItem])
 }
 
 private struct ObserverWrapper {
