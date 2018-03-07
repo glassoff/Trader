@@ -14,6 +14,7 @@ struct Asset: Codable {
     let baseQuantity: Double
     let createdAt: Date
     let uid: String
+    let stopLossLevel: Double
 
     private enum CodingKeys: String, CodingKey {
         case pair
@@ -22,6 +23,7 @@ struct Asset: Codable {
         case baseQuantity
         case createdAt
         case uid
+        case stopLossLevel
     }
 
     static func == (lhs: Asset, rhs: Asset) -> Bool {
@@ -42,6 +44,7 @@ extension Asset {
 
         self.createdAt = Date()
         self.uid = Asset.generateUID(pair: info.pair)
+        self.stopLossLevel = LossStopper.levelWithPrice(info.price)
     }
 
     private static func generateUID(pair: String) -> String {
@@ -63,6 +66,16 @@ class AssetsManager {
         saveAssets()
 
         print("Added asset: \(asset)")
+    }
+
+    func replaceAsset(_ asset: Asset, with newAsset: Asset) {
+        if removeAsset(asset) {
+            addAsset(newAsset)
+
+            saveAssets()
+        } else {
+            print("ERROR: couldn't replace asset!")
+        }
     }
 
     func removeAsset(_ asset: Asset) -> Bool {

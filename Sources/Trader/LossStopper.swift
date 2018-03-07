@@ -17,20 +17,36 @@ class LossStopper {
         self.ordersMonitor = ordersMonitor
     }
 
+    class func levelWithPrice(_ price: Double) -> Double {
+        return price - price / 100 * Settings.stopLossPercent
+    }
+
     private func process(data: [TickerItem]) {
         for asset in assetsManager.assets {
             guard let tickData = (data.filter { $0.pair == asset.pair }).first else {
                 print("WARNING: no tick data for \(asset.pair)")
                 continue
             }
-            stopLossIfNeeded(asset: asset, tickData: tickData)
+
+            var assetForProcess = asset
+
+            let newStoplossLevel = LossStopper.levelWithPrice(tickData.currentBestBuyPrice)
+            if newStoplossLevel > asset.stopLossLevel {
+                print("Need change stoploss level for \(asset.pair)")
+
+                let newAsset = asset.createNewWithStoplossLevelTo(newStoplossLevel)
+
+                assetsManager.replaceAsset(asset, with: newAsset)
+
+                assetForProcess = newAsset
+            }
+
+            stopLossIfNeeded(asset: assetForProcess, tickData: tickData)
         }
     }
 
     private func stopLossIfNeeded(asset: Asset, tickData: TickerItem) {
-        let stopPrice = asset.buyPrice - asset.buyPrice / 100 * Settings.stopLossPercent
-
-        if tickData.currentBestSellPrice <= stopPrice {
+        if tickData.currentBestBuyPrice <= asset.stopLossLevel {
             print("NEED STOP LOSS of \(asset.pair) :((")
 
             let sellPrice = tickData.currentBestBuyPrice
@@ -49,6 +65,14 @@ extension LossStopper: DataCollectorObserver {
 
     func dataCollector(_ dataCollector: DataCollector, didGetNewData data: [TickerItem]) {
         process(data: data)
+    }
+
+}
+
+extension Asset {
+
+    func createNewWithStoplossLevelTo(_ newStoplossLevel: Double) -> Asset {
+        return Asset(pair: pair, buyPrice: buyPrice, quantity: quantity, baseQuantity: baseQuantity, createdAt: createdAt, uid: uid, stopLossLevel: newStoplossLevel)
     }
 
 }
