@@ -133,8 +133,6 @@ class OrdersMonitor {
     }
 
     private func orderIsFullOpen(object: OrderData, withServerOrder serverOrder: Order) -> Bool {
-        print("Check order is full open...")
-        print("\(serverOrder.quantity) <> \(object.quantity)")
         if serverOrder.quantity < object.quantity {
             return false
         }

@@ -75,7 +75,7 @@ class DataCollector {
 
     private func startIntermediateCollect() {
         if #available(OSX 10.12, *) {
-            _ = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] (timer) in
+            _ = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] (timer) in
                 self?.intermediateTick()
             }
         } else {
