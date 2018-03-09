@@ -17,7 +17,7 @@ class LossStopper {
         self.ordersMonitor = ordersMonitor
     }
 
-    class func levelWithPrice(_ price: Double) -> Double {
+    private class func levelWithPrice(_ price: Double) -> Double {
         return price - price / 100 * Settings.stopLossPercent
     }
 
@@ -28,25 +28,23 @@ class LossStopper {
                 continue
             }
 
-            var assetForProcess = asset
+            if !stopLossIfNeeded(asset: asset, tickData: tickData) {
+                let newLastBidForStoploss = tickData.currentBestBuyPrice > asset.lastBidForStoploss ? tickData.currentBestBuyPrice : nil
+                let newLastAskForStoploss = tickData.currentBestSellPrice > asset.lastAskForStoploss ? tickData.currentBestSellPrice : nil
 
-            let newStoplossLevel = LossStopper.levelWithPrice(tickData.currentBestBuyPrice)
-            if newStoplossLevel > asset.stopLossLevel {
-                print("Need change stoploss level for \(asset.pair)")
+                if newLastBidForStoploss != nil || newLastAskForStoploss != nil {
+                    let updatedAsset = asset.createNewWithStoplossValues(newLastAskForStoploss: newLastAskForStoploss, newLastBidForStoploss: newLastBidForStoploss)
 
-                let newAsset = asset.createNewWithStoplossLevelTo(newStoplossLevel)
+                    assetsManager.replaceAsset(asset, with: updatedAsset)
 
-                assetsManager.replaceAsset(asset, with: newAsset)
-
-                assetForProcess = newAsset
+                    print("Changed stoploss levels for \(asset.pair)")
+                }
             }
-
-            stopLossIfNeeded(asset: assetForProcess, tickData: tickData)
         }
     }
 
-    private func stopLossIfNeeded(asset: Asset, tickData: TickerItem) {
-        if tickData.currentBestBuyPrice <= asset.stopLossLevel {
+    private func stopLossIfNeeded(asset: Asset, tickData: TickerItem) -> Bool {
+        if tickData.currentBestBuyPrice <= LossStopper.levelWithPrice(asset.lastBidForStoploss) {
             print("NEED STOP LOSS of \(asset.pair) :((")
 
             let sellPrice = tickData.currentBestBuyPrice
@@ -56,7 +54,11 @@ class LossStopper {
             } else {
                 print("ERROR: couldn't place stop loss sell order!")
             }
+
+            return true
         }
+
+        return false
     }
 
 }
@@ -73,8 +75,17 @@ extension LossStopper: DataCollectorObserver {
 
 extension Asset {
 
-    func createNewWithStoplossLevelTo(_ newStoplossLevel: Double) -> Asset {
-        return Asset(pair: pair, buyPrice: buyPrice, quantity: quantity, baseQuantity: baseQuantity, createdAt: createdAt, uid: uid, stopLossLevel: newStoplossLevel)
+    func createNewWithStoplossValues(newLastAskForStoploss: Double?, newLastBidForStoploss: Double?) -> Asset {
+        return Asset(
+            pair: pair,
+            buyPrice: buyPrice,
+            quantity: quantity,
+            baseQuantity: baseQuantity,
+            createdAt: createdAt,
+            uid: uid,
+            lastAskForStoploss: newLastAskForStoploss ?? lastAskForStoploss,
+            lastBidForStoploss: newLastBidForStoploss ?? lastBidForStoploss
+        )
     }
 
 }

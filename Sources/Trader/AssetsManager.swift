@@ -14,7 +14,9 @@ struct Asset: Codable {
     let baseQuantity: Double
     let createdAt: Date
     let uid: String
-    let stopLossLevel: Double
+
+    let lastAskForStoploss: Double
+    let lastBidForStoploss: Double
 
     private enum CodingKeys: String, CodingKey {
         case pair
@@ -23,7 +25,8 @@ struct Asset: Codable {
         case baseQuantity
         case createdAt
         case uid
-        case stopLossLevel
+        case lastAskForStoploss
+        case lastBidForStoploss
     }
 
     static func == (lhs: Asset, rhs: Asset) -> Bool {
@@ -44,7 +47,9 @@ extension Asset {
 
         self.createdAt = Date()
         self.uid = Asset.generateUID(pair: info.pair)
-        self.stopLossLevel = LossStopper.levelWithPrice(info.price)
+
+        self.lastAskForStoploss = 0
+        self.lastBidForStoploss = 0
     }
 
     private static func generateUID(pair: String) -> String {
