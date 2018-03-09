@@ -22,7 +22,7 @@ struct Settings {
 
     static let feePercent: Double = 0.2
     static let stopLossPercent: Double = 0.5
-    static let trandUpPercent: Double = 0.1
+    static let trandUpPercent: Double = 0.06
 
     static let pairs = ["BCH_BTC", "DASH_BTC", "ETH_BTC", "ETC_BTC", "LTC_BTC", "ZEC_BTC", "XMR_BTC", "WAVES_BTC", "KICK_BTC", "XRP_BTC", "BTC_USD", "BCH_USD", "DASH_USD", "ETH_USD", "ETC_USD", "LTC_USD", "ZEC_USD", "XRP_USD", "XMR_USD"]
 
