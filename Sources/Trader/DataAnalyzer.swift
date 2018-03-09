@@ -25,7 +25,8 @@ class DataAnalyzer {
             print("Create fake enter data...")
             let tick = (tickData.filter { $0.pair == "ETH_BTC" }).first!
             let price = tick.currentBestBuyPrice
-            return [createInitialBuyActionData(pair: tick.pair, bestBuyPrice: price/4)!]
+
+            return [ActionInitialData(pair: tick.pair, type: .buy, price: price/4)]
         }
 
         var taskDatas = [ActionInitialData]()
@@ -58,7 +59,7 @@ class DataAnalyzer {
             && isTrendUp(data: emaData30) {
             //penetration from down to up
             log(pair: pair, datas: ["ALL": priceData, "EMA7": emaData7, "EMA30": emaData30], type: .canBuy)
-            let buyActionData = createInitialBuyActionData(pair: pair, bestBuyPrice: tickData.currentBestBuyPrice)
+            let buyActionData = ActionInitialData(pair: pair, type: .buy, price: tickData.currentBestSellPrice)
 
             return buyActionData
         } else if emaData7[emaData7.count - 2].price > emaData30[emaData30.count - 2].price && emaData7.last!.price < emaData30.last!.price {
@@ -90,20 +91,6 @@ class DataAnalyzer {
         print("Check trend is up: diff \(diff)")
 
         return diff >= Settings.trandUpPercent
-    }
-
-    private func createInitialBuyActionData(pair: String, bestBuyPrice: Double) -> ActionInitialData? {
-        let buyPrice = calculateBuyPrice(fromBestBuyPrice: bestBuyPrice)
-
-        return ActionInitialData(pair: pair, type: .buy, price: buyPrice)
-    }
-
-    private func calculateBuyPrice(fromBestBuyPrice bestBuyPrice: Double) -> Double {
-        let diffPercent = Settings.orderPriceDiffBuyPercent
-        let diff = bestBuyPrice/100 * Double(diffPercent)
-        let orderBuyPrice: Double = bestBuyPrice + diff
-
-        return orderBuyPrice
     }
 
     private func sma(for pair: String, period: Int) -> [PriceData]? {
