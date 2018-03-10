@@ -98,7 +98,7 @@ class DataAnalyzer {
     private func sma(for pair: String, period: Int) -> [PriceData]? {
         let priceData = collector.data(for: pair)
 
-        let minimumDataCount = period * 2
+        let minimumDataCount = period + 4
         guard priceData.count >= minimumDataCount else {
             print("Not enough data count for SMA, only \(priceData.count), we need \(minimumDataCount)")
             return nil
@@ -110,7 +110,7 @@ class DataAnalyzer {
     private func ema(for pair: String, period: Int) -> [PriceData]? {
         let priceData = collector.data(for: pair)
 
-        let minimumDataCount = period * 2
+        let minimumDataCount = period + 4
         guard priceData.count >= minimumDataCount else {
             print("Not enough data count for EMA, only \(priceData.count), we need \(minimumDataCount)")
             return nil
