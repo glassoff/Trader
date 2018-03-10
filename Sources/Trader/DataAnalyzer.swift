@@ -41,33 +41,33 @@ class DataAnalyzer {
     }
 
     private func canMakeActionForPair(tickData: TickerItem) -> ActionInitialData? {
-        let kSlowEMAPeriod = 100
-        let kFastEMAPeriod = 25
+        let kSlowMAPeriod = 100
+        let kFastMAPeriod = 25
 
         let pair = tickData.pair
 
-        guard let emaDataSlow = ema(for: pair, period: kSlowEMAPeriod), emaDataSlow.count > 0 else {
-            print("ERROR: no EMA \(kSlowEMAPeriod) data for \(pair)!")
+        guard let maDataSlow = ema(for: pair, period: kSlowMAPeriod), maDataSlow.count > 0 else {
+            print("ERROR: no MA \(kSlowMAPeriod) data for \(pair)!")
             return nil
         }
 
-        guard let emaDataFast = ema(for: pair, period: kFastEMAPeriod), emaDataFast.count > 0 else {
-            print("ERROR: no EMA \(kFastEMAPeriod) data for \(pair)!")
+        guard let maDataFast = ema(for: pair, period: kFastMAPeriod), maDataFast.count > 0 else {
+            print("ERROR: no MA \(kFastMAPeriod) data for \(pair)!")
             return nil
         }
 
         let priceData = collector.data(for: pair)
 
-        if emaDataFast[emaDataFast.count - 2].price < emaDataSlow[emaDataSlow.count - 2].price && emaDataFast.last!.price > emaDataSlow.last!.price
-            && isTrendUp(data: emaDataSlow) {
+        if maDataFast[maDataFast.count - 2].price < maDataSlow[maDataSlow.count - 2].price && maDataFast.last!.price > maDataSlow.last!.price
+            && isTrendUp(data: maDataSlow) {
             //penetration from down to up
-            log(pair: pair, datas: ["ALL": priceData, "EMA\(kFastEMAPeriod)": emaDataFast, "EMA\(kSlowEMAPeriod)": emaDataSlow], type: .canBuy)
+            log(pair: pair, datas: ["ALL": priceData, "MA\(kFastMAPeriod)": maDataFast, "MA\(kSlowMAPeriod)": maDataSlow], type: .canBuy)
             let buyActionData = ActionInitialData(pair: pair, type: .buy, price: tickData.currentBestSellPrice)
 
             return buyActionData
-        } else if emaDataFast[emaDataFast.count - 2].price > emaDataSlow[emaDataSlow.count - 2].price && emaDataFast.last!.price < emaDataSlow.last!.price {
+        } else if maDataFast[maDataFast.count - 2].price > maDataSlow[maDataSlow.count - 2].price && maDataFast.last!.price < maDataSlow.last!.price {
             //penetration from up to down
-            log(pair: pair, datas: ["ALL": priceData, "EMA\(kFastEMAPeriod)": emaDataFast, "EMA\(kSlowEMAPeriod)": emaDataSlow], type: .canSell)
+            log(pair: pair, datas: ["ALL": priceData, "MA\(kFastMAPeriod)": maDataFast, "MA\(kSlowMAPeriod)": maDataSlow], type: .canSell)
             let sellActionData = ActionInitialData(pair: pair, type: .sell, price: tickData.currentBestBuyPrice)
 
             return sellActionData
