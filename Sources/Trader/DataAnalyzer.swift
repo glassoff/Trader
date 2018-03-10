@@ -119,6 +119,18 @@ class DataAnalyzer {
         return calculateEMA(data: priceData, step: period)
     }
 
+    private func dema(for pair: String, period: Int) -> [PriceData]? {
+        let priceData = collector.data(for: pair)
+
+        let minimumDataCount = period * 2 + 4
+        guard priceData.count >= minimumDataCount else {
+            print("Not enough data count for DEMA, only \(priceData.count), we need \(minimumDataCount)")
+            return nil
+        }
+
+        return calculateDEMA(data: priceData, step: period)
+    }
+
     private enum LogType: String {
         case canBuy = "canBuy", canSell = "canSell", unknown = "unknown"
     }
@@ -190,8 +202,14 @@ private func calculateSMA(data: [PriceData], step: Int) -> [PriceData] {
 }
 
 private func calculateEMA(data: [PriceData], step: Int) -> [PriceData] {
+    func calculateEMAItem(price: Double, prevEMAValue: Double, step: Int) -> Double {
+        let k: Double = 2 / (Double(step) + 1)
+        let result = price * k + prevEMAValue * (1 - k)
+
+        return result
+    }
+
     assert(data.count >= step, "Can't calculate EMA, data count is small")
-    let k: Double = 2 / (Double(step) + 1)
 
     let smaSlice = data[0 ..< step]
     var prevValue = calculateSMA(data: Array(smaSlice), step: step).last!.price
@@ -199,10 +217,27 @@ private func calculateEMA(data: [PriceData], step: Int) -> [PriceData] {
     var emaData: [PriceData] = [PriceData(date: data[step - 1].date, price: prevValue)]
 
     for i in step ..< data.count {
-        let value = data[i].price * k + prevValue * (1 - k)
+        let value = calculateEMAItem(price: data[i].price, prevEMAValue: prevValue, step: step)
         emaData.append(PriceData(date: data[i].date, price: value))
         prevValue = value
     }
 
     return emaData
+}
+
+private func calculateDEMA(data: [PriceData], step: Int) -> [PriceData] {
+    let EMAData = calculateEMA(data: data, step: step)
+    let EMAEMAData = calculateEMA(data: EMAData, step: step)
+
+    let EMADataSlice = data[EMAData.count - EMAEMAData.count ..< EMAData.count]
+
+    var DEMAData = [PriceData]()
+
+    for i in step ..< EMAEMAData.count {
+        assert(EMAEMAData[i].date == EMADataSlice[i].date)
+        let value = 2 * EMADataSlice[i].price - EMAEMAData[i].price
+        DEMAData.append(PriceData(date: EMAEMAData[i].date, price: value))
+    }
+
+    return DEMAData
 }
