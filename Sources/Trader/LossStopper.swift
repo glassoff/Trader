@@ -42,8 +42,6 @@ class LossStopper {
     private func stopLossIfNeeded(asset: Asset, tickData: TickerItem) -> Bool {
         let potentialCurrentProfit = ((asset.lastBidForStoploss - asset.buyPrice) / asset.buyPrice * 100) - Settings.feePercent * 2
 
-        print("Potential profit of \(asset.pair): \(potentialCurrentProfit)%")
-
         let stopPercentLevel = Settings.stopLossPercent(currentPotentialProfit: potentialCurrentProfit)
         let stopLossValue = asset.lastBidForStoploss - asset.lastBidForStoploss / 100 * stopPercentLevel
 
