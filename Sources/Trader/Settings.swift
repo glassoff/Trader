@@ -25,7 +25,7 @@ struct Settings {
         if currentPotentialProfit >= 0.5 {
             return 0.5
         }
-        return 1
+        return 2
     }
     static let trandUpPercent: Double = 0.02
 
