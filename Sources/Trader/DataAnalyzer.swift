@@ -73,6 +73,7 @@ class DataAnalyzer {
             return sellActionData
         } else {
             //no changes
+//            log(pair: pair, datas: ["ALL": priceData, "MA\(kFastMAPeriod)": maDataFast, "MA\(kSlowMAPeriod)": maDataSlow], type: .unknown)
         }
 
         return nil
