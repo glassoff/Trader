@@ -21,7 +21,12 @@ struct Settings {
     static let partOfHourInterval: Int = 4
 
     static let feePercent: Double = 0.2
-    static let stopLossPercent: Double = 1
+    static func stopLossPercent(currentPotentialProfit: Double) -> Double {
+        if currentPotentialProfit >= 0.5 {
+            return 0.5
+        }
+        return 1
+    }
     static let trandUpPercent: Double = 0.02
 
     static let pairs = ["BCH_BTC", "DASH_BTC", "ETH_BTC", "ETC_BTC", "LTC_BTC", "ZEC_BTC", "XMR_BTC", "WAVES_BTC", "KICK_BTC", "XRP_BTC", "BCH_USD", "DASH_USD", "ETH_USD", "ETC_USD", "LTC_USD", "ZEC_USD", "XRP_USD", "XMR_USD"]

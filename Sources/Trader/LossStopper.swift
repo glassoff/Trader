@@ -17,10 +17,6 @@ class LossStopper {
         self.ordersMonitor = ordersMonitor
     }
 
-    private class func levelWithPrice(_ price: Double) -> Double {
-        return price - price / 100 * Settings.stopLossPercent
-    }
-
     private func process(data: [TickerItem]) {
         for asset in assetsManager.assets {
             guard let tickData = (data.filter { $0.pair == asset.pair }).first else {
@@ -44,8 +40,15 @@ class LossStopper {
     }
 
     private func stopLossIfNeeded(asset: Asset, tickData: TickerItem) -> Bool {
-        if tickData.currentBestBuyPrice <= LossStopper.levelWithPrice(asset.lastBidForStoploss) {
-            print("NEED STOP LOSS of \(asset.pair) :((")
+        let potentialCurrentProfit = ((asset.lastBidForStoploss - asset.buyPrice) / asset.buyPrice * 100) - Settings.feePercent * 2
+
+        print("Potential profit of \(asset.pair): \(potentialCurrentProfit)%")
+
+        let stopPercentLevel = Settings.stopLossPercent(currentPotentialProfit: potentialCurrentProfit)
+        let stopLossValue = asset.lastBidForStoploss - asset.lastBidForStoploss / 100 * stopPercentLevel
+
+        if tickData.currentBestBuyPrice <= stopLossValue {
+            print("NEED STOP LOSS of \(asset.pair) with stop level \(stopPercentLevel)%")
 
             let sellPrice = tickData.currentBestBuyPrice
 
