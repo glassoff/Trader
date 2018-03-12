@@ -46,12 +46,12 @@ class DataAnalyzer {
 
         let pair = tickData.pair
 
-        guard let maDataSlow = ema(for: pair, period: kSlowMAPeriod), maDataSlow.count > 0 else {
+        guard let maDataSlow = dema(for: pair, period: kSlowMAPeriod), maDataSlow.count > 0 else {
             print("ERROR: no MA \(kSlowMAPeriod) data for \(pair)!")
             return nil
         }
 
-        guard let maDataFast = ema(for: pair, period: kFastMAPeriod), maDataFast.count > 0 else {
+        guard let maDataFast = dema(for: pair, period: kFastMAPeriod), maDataFast.count > 0 else {
             print("ERROR: no MA \(kFastMAPeriod) data for \(pair)!")
             return nil
         }
@@ -230,11 +230,11 @@ private func calculateDEMA(data: [PriceData], step: Int) -> [PriceData] {
     let EMAData = calculateEMA(data: data, step: step)
     let EMAEMAData = calculateEMA(data: EMAData, step: step)
 
-    let EMADataSlice = data[EMAData.count - EMAEMAData.count ..< EMAData.count]
+    let EMADataSlice = Array(EMAData[EMAData.count - EMAEMAData.count ..< EMAData.count])
 
     var DEMAData = [PriceData]()
 
-    for i in step ..< EMAEMAData.count {
+    for i in 0 ..< EMAEMAData.count {
         assert(EMAEMAData[i].date == EMADataSlice[i].date)
         let value = 2 * EMADataSlice[i].price - EMAEMAData[i].price
         DEMAData.append(PriceData(date: EMAEMAData[i].date, price: value))
