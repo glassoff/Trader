@@ -42,7 +42,7 @@ class DataAnalyzer {
 
     private func canMakeActionForPair(tickData: TickerItem) -> ActionInitialData? {
         let kSlowMAPeriod = 100
-        let kFastMAPeriod = 25
+        let kFastMAPeriod = 20
 
         let pair = tickData.pair
 
