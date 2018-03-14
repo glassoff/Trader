@@ -59,7 +59,7 @@ class DataAnalyzer {
         let priceData = collector.data(for: pair)
 
         if maDataFast[maDataFast.count - 2].price < maDataSlow[maDataSlow.count - 2].price && maDataFast.last!.price > maDataSlow.last!.price
-            && isTrendUp(data: maDataSlow) {
+            && isTrendSuitable(data: maDataSlow) {
             //penetration from down to up
             log(pair: pair, datas: ["ALL": priceData, "MA\(kFastMAPeriod)": maDataFast, "MA\(kSlowMAPeriod)": maDataSlow], type: .canBuy)
             let buyActionData = ActionInitialData(pair: pair, type: .buy, price: tickData.currentBestSellPrice)
@@ -79,7 +79,7 @@ class DataAnalyzer {
         return nil
     }
 
-    private func isTrendUp(data: [PriceData]) -> Bool {
+    private func isTrendSuitable(data: [PriceData]) -> Bool {
         let considerLength = 4
 
         guard data.count >= considerLength else {
@@ -93,7 +93,7 @@ class DataAnalyzer {
 
         print("Check trend is up: diff \(diff)")
 
-        return diff >= Settings.trandUpPercent
+        return diff >= 0.01 && diff < 0.1 //положительный тренд, но при этом не слишком резкий
     }
 
     private func sma(for pair: String, period: Int) -> [PriceData]? {
