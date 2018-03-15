@@ -51,6 +51,11 @@ assert(!(argOnlyCollect && argWithoutCollect), "--only-collect and --without-col
 
 application.main(dataPath: dataPath, onlyCollect: argOnlyCollect, withoutCollect: argWithoutCollect, fakeEnter: argFakeEnter)
 
+//XXX
+let ccxt = CCXT()
+
+assert(false)
+
 //let assetsManager = AssetsManager()
 //let asset = Asset(pair: "DASH_BTC", buyPrice: Double(0.06629396), quantity: Double(0.02403852), baseQuantity: Double(0.0016), createdAt: Date(), uid: "DASHUID1234")
 //assetsManager.addAsset(asset)
