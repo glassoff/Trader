@@ -46,12 +46,12 @@ class DataAnalyzer {
 
         let pair = tickData.pair
 
-        guard let maDataSlow = dema(for: pair, period: kSlowMAPeriod), maDataSlow.count > 0 else {
+        guard let maDataSlow = ema(for: pair, period: kSlowMAPeriod), maDataSlow.count > 0 else {
             print("ERROR: no MA \(kSlowMAPeriod) data for \(pair)!")
             return nil
         }
 
-        guard let maDataFast = dema(for: pair, period: kFastMAPeriod), maDataFast.count > 0 else {
+        guard let maDataFast = ema(for: pair, period: kFastMAPeriod), maDataFast.count > 0 else {
             print("ERROR: no MA \(kFastMAPeriod) data for \(pair)!")
             return nil
         }
